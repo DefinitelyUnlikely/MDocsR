@@ -1,3 +1,3 @@
 mod user;
-pub mod document;
+pub mod document_structs;
 mod refresh_token;
