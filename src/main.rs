@@ -1,4 +1,4 @@
-mod models;
+mod structs;
 
 fn main() {
 }
