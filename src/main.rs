@@ -1,4 +1,4 @@
-mod structs;
+pub mod structs;
 
 fn main() {
 }
