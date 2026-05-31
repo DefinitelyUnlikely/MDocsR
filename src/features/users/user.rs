@@ -41,4 +41,8 @@ impl User {
             updated_at: Utc::now(),
         }
     }
+
+    pub fn hash_password(&mut self) {
+        self.password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST).unwrap();
+    }
 }
