@@ -1,7 +1,7 @@
-pub fn hash_password(&mut self) {
-    self.password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST).unwrap();
+use bcrypt::{BcryptError, DEFAULT_COST};
+
+pub fn hash_password(password: &str) -> Result<String, BcryptError> {
 }
 
-pub fn verify_password(&self, password: &str) -> bool {
-    bcrypt::verify(password, &self.password).unwrap()
+pub fn verify_password(password: &str, hash: &str) -> Result<String, BcryptError> {
 }
