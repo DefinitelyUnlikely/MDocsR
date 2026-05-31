@@ -41,8 +41,15 @@ impl User {
             updated_at: Utc::now(),
         }
     }
-
+    
+    // Copied over from Sören Stahlmann's blog.
+    // HE does do unwrap, but I will need to look into if there are better 
+    // ways to do this - but perhaps we do want the program to panic if we cannot hash passwords?
     pub fn hash_password(&mut self) {
         self.password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST).unwrap();
+    }
+
+    pub fn verify_password(&self, password: &str) -> bool {
+        bcrypt::verify(password, &self.password).unwrap()
     }
 }
