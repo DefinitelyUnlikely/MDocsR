@@ -8,6 +8,8 @@ chrono = "0.4.44"
 bcrypt = "0.19.1"
 rand = "0.10.1"
 hex = "0.4.3"
+config = "0.15.23"
+serde = "1.0.228"
 
 [dependencies.uuid]
 version = "1.23.2"
