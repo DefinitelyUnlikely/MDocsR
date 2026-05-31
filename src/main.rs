@@ -1,4 +1,4 @@
-pub mod structs;
+pub mod common;
 
 fn main() {
 }
