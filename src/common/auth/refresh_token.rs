@@ -12,7 +12,7 @@ impl RefreshToken {
         RefreshToken {
             token: Self::generate_token_value(),
             user_id,
-            expires: Utc::now() + Duration::days(7),
+            expires: Utc::now() + Duration::days(7), // TODO: exchange for config
         }
     }
 
