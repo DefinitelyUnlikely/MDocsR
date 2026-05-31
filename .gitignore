@@ -1,1 +1,4 @@
 /target
+
+# Files related to environment
+.env
