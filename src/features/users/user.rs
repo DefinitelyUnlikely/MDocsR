@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use uuid::Uuid;
 
 pub struct User {
     pub id: String,
@@ -26,4 +27,18 @@ pub struct UserInfo {
 pub struct UserWithInfo {
     pub user: User,
     pub info: UserInfo,
+}
+
+impl User {
+    pub fn new(email: String, password: String, salt: String) -> Self {
+        User {
+            id: Uuid::new_v4().to_string(),
+            email,
+            password,
+            salt,
+            email_verified: false,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
 }
