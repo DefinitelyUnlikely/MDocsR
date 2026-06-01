@@ -21,3 +21,9 @@ fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
     let secret = EncodingKey::from_secret("super_secret_key".as_ref());
     encode(&Header::default(), &claims, &secret)
 }
+
+fn decode_token(token: &str) -> Result<String, jsonwebtoken::errors::Error> {
+    decode::<Claims>()
+}
+
+fn get_sub(claims: &Claims) -> String {}
