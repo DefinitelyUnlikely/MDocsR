@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey, get_current_timestamp};
-use chrono::Utc;
+use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey,
+                   get_current_timestamp};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
