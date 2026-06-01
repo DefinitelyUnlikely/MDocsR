@@ -1,11 +1,11 @@
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
+use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey, get_current_timestamp};
 use chrono::Utc;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
     aud: String,
-    exp: usize,
+    exp: u64,
     iss: String,
     sub: String,
 }
@@ -13,7 +13,7 @@ struct Claims {
 fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
     let claims = Claims {
         aud: String::from("TODO: Make use of config"),
-        exp: Utc::now().timestamp() as usize + 900, // TODO: Can also be a config for the duration we add
+        exp: get_current_timestamp() + 900, // TODO: Can also be a config for the duration we add
         iss: String::from("TODO: Make use of config for iss"),
         sub: user_id.to_string(),
     };
