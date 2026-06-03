@@ -1,6 +1,5 @@
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey,
-                   get_current_timestamp};
+use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey, get_current_timestamp, TokenData};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -22,8 +21,8 @@ fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
     encode(&Header::default(), &claims, &secret)
 }
 
-fn decode_token(token: &str) -> Result<String, jsonwebtoken::errors::Error> {
-    decode::<Claims>()
+fn decode_token(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
+    let secret = DecodingKey::from_secret("super_secret_key".as_ref());
+    let token_data = decode::<Claims>(token, &secret, &Validation::new(Algorithm::HS256))?;
+    Ok(token_data)
 }
-
-fn get_sub(claims: &Claims) -> String {}
