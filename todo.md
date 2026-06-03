@@ -2,13 +2,16 @@
 
 ## Authentication TODO
 
+NOTE: Anything marked as done is merely code that has been implemented.
+Done and tested means code exists and the code works as intended. 
+
 for authentication, what needs to be done? 
 If we start by disregarding anything that would involve endpoints and databases. 
 
-1. We need a way to generate a JWT
-2. We need a way to validate the JWT
-3. We need a way to decode the JWT to check the sub claim
-4. We need a refresh token
+1. We need a way to generate a JWT - Done
+2. We need a way to validate the JWT - Done
+3. We need a way to decode the JWT to check the sub claim - Done
+4. We need a refresh token - Done
 
 All of these things will also require us to be able to get environment variables so that
 we can control issuer, audience, expiration time etc etc in a more modular manner, rather than having these things
