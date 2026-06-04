@@ -34,3 +34,38 @@ fn decode_token(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::
     let token_data = decode::<Claims>(token, &secret, &Validation::new(Algorithm::HS256))?;
     Ok(token_data)
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Once;
+
+    static INIT: Once = Once::new();
+
+    // Unsafe should be fine here, as its code only being run for testing.
+    // and according to the docs set var is unsafe if you have multiple threads
+    // on a none windows operating system. Should not be the case for tests.
+    fn setup_env() {
+        INIT.call_once(|| unsafe {
+            env::set_var("JWT_KEY", "test-secret-key-for-jwt-signing");
+            env::set_var("JWT_AUDIENCE", "test-audience");
+            env::set_var("JWT_ISS", "test-issuer");
+        });
+    }
+
+    #[test]
+    fn test_create_and_decode_jwt() {
+        setup_env();
+        let user_id = "user-abc-123";
+        
+        let token = create_jwt(user_id).expect("Failed to create JWT");
+        assert!(!token.is_empty());
+        let token_data = decode_token(&token).expect("Failed to decode JWT");
+        
+        assert_eq!(token_data.claims.sub, user_id);
+        assert_eq!(token_data.claims.aud, env::var("JWT_AUDIENCE").unwrap());
+        assert_eq!(token_data.claims.iss, env::var("JWT_ISS").unwrap());
+        assert!(token_data.claims.exp > get_current_timestamp());
+    }
+}
