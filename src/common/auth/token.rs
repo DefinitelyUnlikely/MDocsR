@@ -11,9 +11,10 @@ struct Claims {
 }
 
 fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
+    let seconds_to_expire: u64 = env::var("EXPIRATION_IN_SECONDS").unwrap_or(String::from("900")).parse().unwrap_or(900);
     let claims = Claims {
         aud: String::from(env::var("JWT_AUDIENCE").expect("JWT_AUDIENCE not set!")),
-        exp: get_current_timestamp() + 900,
+        exp: get_current_timestamp() + seconds_to_expire,
         iss: String::from(env::var("JWT_ISS").expect("JWT_ISS not set!")),
         sub: user_id.to_string(),
     };
