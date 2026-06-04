@@ -19,9 +19,9 @@ fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
         .parse()
         .unwrap_or(900);
     let claims = Claims {
-        aud: String::from(env::var("JWT_AUDIENCE").expect("JWT_AUDIENCE not set!")),
+        aud: env::var("JWT_AUDIENCE").expect("JWT_AUDIENCE not set!"),
         exp: get_current_timestamp() + seconds_to_expire,
-        iss: String::from(env::var("JWT_ISS").expect("JWT_ISS not set!")),
+        iss: env::var("JWT_ISS").expect("JWT_ISS not set!"),
         sub: user_id.to_string(),
     };
 
