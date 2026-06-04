@@ -35,7 +35,6 @@ fn decode_token(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::
     Ok(token_data)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -58,11 +57,11 @@ mod tests {
     fn test_create_and_decode_jwt() {
         setup_env();
         let user_id = "user-abc-123";
-        
+
         let token = create_jwt(user_id).expect("Failed to create JWT");
         assert!(!token.is_empty());
         let token_data = decode_token(&token).expect("Failed to decode JWT");
-        
+
         assert_eq!(token_data.claims.sub, user_id);
         assert_eq!(token_data.claims.aud, env::var("JWT_AUDIENCE").unwrap());
         assert_eq!(token_data.claims.iss, env::var("JWT_ISS").unwrap());
