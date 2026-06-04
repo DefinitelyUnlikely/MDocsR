@@ -8,7 +8,6 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, BcryptError> 
     bcrypt::verify(password, hash)
 }
 
-
 // Tests
 #[cfg(test)]
 mod tests {

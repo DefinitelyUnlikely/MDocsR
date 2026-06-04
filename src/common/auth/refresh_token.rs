@@ -21,7 +21,7 @@ impl RefreshToken {
         rand::rng().fill_bytes(&mut bytes);
         hex::encode(bytes)
     }
-    
+
     pub fn is_expired(&self) -> bool {
         Utc::now() > self.expires
     }
@@ -48,7 +48,7 @@ mod tests {
         // Expiration should be in the future
         assert!(token.expires > Utc::now());
     }
-    
+
     #[test]
     fn test_is_expired() {
         let user_id = "user-123".to_string();
@@ -58,7 +58,7 @@ mod tests {
             user_id,
             expires: Utc::now() + Duration::days(-7), // TODO: exchange for config
         };
-        
+
         assert!(!token.is_expired());
         assert!(expired_token.is_expired());
     }

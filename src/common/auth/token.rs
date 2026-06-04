@@ -1,6 +1,9 @@
+use jsonwebtoken::{
+    Algorithm, DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode,
+    get_current_timestamp,
+};
+use serde::{Deserialize, Serialize};
 use std::env;
-use serde::{Serialize, Deserialize};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey, get_current_timestamp, TokenData};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -11,7 +14,10 @@ struct Claims {
 }
 
 fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
-    let seconds_to_expire: u64 = env::var("EXPIRATION_IN_SECONDS").unwrap_or(String::from("900")).parse().unwrap_or(900);
+    let seconds_to_expire: u64 = env::var("EXPIRATION_IN_SECONDS")
+        .unwrap_or(String::from("900"))
+        .parse()
+        .unwrap_or(900);
     let claims = Claims {
         aud: String::from(env::var("JWT_AUDIENCE").expect("JWT_AUDIENCE not set!")),
         exp: get_current_timestamp() + seconds_to_expire,
