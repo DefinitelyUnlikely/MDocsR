@@ -32,7 +32,7 @@ fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
 fn decode_token(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
     let secret = DecodingKey::from_secret(env::var("JWT_KEY").expect("JWT_KEY not set!").as_ref());
     let mut validation = Validation::new(Algorithm::HS256);
-    
+
     let aud = env::var("JWT_AUDIENCE").expect("JWT_AUDIENCE not set!");
     validation.set_audience(&[aud]);
 
