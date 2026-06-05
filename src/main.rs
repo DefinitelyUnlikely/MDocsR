@@ -1,6 +1,6 @@
 pub mod common;
 pub mod features;
-
-fn main() {
+#[tokio::main]
+async fn main() {
     dotenvy::dotenv().ok();
 }
