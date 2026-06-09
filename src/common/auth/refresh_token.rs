@@ -1,5 +1,6 @@
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
+use crate::common::error::Error;
 
 pub struct RefreshToken {
     pub token: String,
@@ -25,6 +26,18 @@ impl RefreshToken {
     pub fn is_expired(&self) -> bool {
         Utc::now() > self.expires
     }
+}
+
+pub async fn find_refresh_token(value: String) -> Option<RefreshToken> {
+    // Connect to database, hydrate the token and return it if possible.
+    // pass the database connection as an argument?
+}
+
+pub async fn consume_refresh_token(token: RefreshToken) -> Result<bool, Error> {
+    // check the expiration date.
+    // delete the token (no matter what)
+    // look up that the refresh token user id exists in our database
+    // and return a result based on these actions.
 }
 
 // Tests
