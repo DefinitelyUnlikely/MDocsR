@@ -1,7 +1,9 @@
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
+use sqlx::PgPool;
 use crate::common::error::Error;
 
+#[derive(sqlx::FromRow)]
 pub struct RefreshToken {
     pub token: String,
     pub user_id: String,
@@ -28,9 +30,10 @@ impl RefreshToken {
     }
 }
 
-pub async fn find_refresh_token(value: String) -> Option<RefreshToken> {
+pub async fn find_refresh_token(value: String, pool: &PgPool) -> Option<RefreshToken> {
     // Connect to database, hydrate the token and return it if possible.
-    // pass the database connection as an argument?
+    // pass the database connection as an argument? Or the pool? We want to use
+    // axum for handling routes. Make use of a state?
 }
 
 pub async fn consume_refresh_token(token: RefreshToken) -> Result<bool, Error> {
