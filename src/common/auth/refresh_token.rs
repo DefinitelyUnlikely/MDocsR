@@ -33,7 +33,8 @@ impl RefreshToken {
 pub async fn find_refresh_token(value: String, pool: &PgPool) -> Option<RefreshToken> {
     // Connect to database, hydrate the token and return it if possible.
     // pass the pool to the function, apparently very cheap to copy this. 
-    // also ensures our functions are decouple from any handlers. 
+    // also ensures our functions are decouple from any handlers.
+    todo!()
 }
 
 pub async fn consume_refresh_token(token: RefreshToken) -> Result<bool, Error> {
@@ -41,6 +42,7 @@ pub async fn consume_refresh_token(token: RefreshToken) -> Result<bool, Error> {
     // delete the token (no matter what)
     // look up that the refresh token user id exists in our database
     // and return a result based on these actions.
+    todo!()
 }
 
 // Tests

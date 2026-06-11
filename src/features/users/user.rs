@@ -25,7 +25,6 @@ pub struct UserInfo {
     pub postal_code: String,
 }
 
-#[derive(sqlx::FromRow)]
 pub struct UserWithInfo {
     pub user: User,
     pub info: UserInfo,
