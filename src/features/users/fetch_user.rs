@@ -3,7 +3,13 @@ use crate::common::error::Error;
 use crate::features::users::user::User;
 
 pub async fn fetch_user_by_id(id: String, pool: &PgPool, include_info: bool) -> Result<User, Error> {
-    todo!()
+    if include_info {}
+    
+    let fetch = fetch_user_without_info(id, pool).await;
+    match fetch {
+        Ok(user) => Ok(user),
+        Err(err) => Err(err.into()),
+    }
 }
 
 async fn fetch_user_with_info(id: String, pool: &PgPool) -> Result<User, Error> {
