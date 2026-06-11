@@ -14,4 +14,5 @@ async fn fetch_user_without_info(id: String, pool: &PgPool) -> Result<User, sqlx
     let result = sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", id)
         .fetch_one(pool)
         .await;
+    result
 }
