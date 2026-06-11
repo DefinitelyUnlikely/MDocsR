@@ -7,6 +7,7 @@ pub enum Error {
     Validation,
 }
 
+// TODO: Add more errors
 impl From<sqlx::Error> for Error {
     fn from(err: sqlx::Error) -> Self {
         match err {
