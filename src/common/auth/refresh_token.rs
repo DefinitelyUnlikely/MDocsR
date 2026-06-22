@@ -31,10 +31,15 @@ impl RefreshToken {
 }
 
 pub async fn find_refresh_token(value: String, pool: &PgPool) -> Option<RefreshToken> {
-    // Connect to database, hydrate the token and return it if possible.
-    // pass the pool to the function, apparently very cheap to copy this. 
-    // also ensures our functions are decouple from any handlers.
-    todo!()
+    let token = sqlx::query_as!(RefreshToken, "SELECT * FROM refresh_tokens WHERE token = $1", value)
+        .fetch_one(pool)
+        .await;
+
+    if token.is_err() {
+        None
+    } else {
+        Some(token.unwrap())
+    }
 }
 
 pub async fn consume_refresh_token(token: RefreshToken) -> Result<bool, Error> {
