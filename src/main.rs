@@ -1,5 +1,6 @@
 use crate::db::create_pool;
 use std::env;
+use axum::Router;
 use sqlx::PgPool;
 
 pub mod common;
@@ -20,4 +21,9 @@ async fn main() {
         .await
         .expect("Failed to create database pool");
     let state = AppState { db_pool: pool };
+
+    let app = Router::new()
+        .route("token/refresh", )
 }
+
+async fn refresh_token()
