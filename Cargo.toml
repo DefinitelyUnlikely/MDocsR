@@ -13,6 +13,7 @@ serde = "1.0.228"
 jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
 sqlx = { version = "0.9.0", features = ["runtime-tokio", "postgres", "macros", "chrono"] }
 tokio = { version = "1.52.3", features = ["full"] }
+axum = "0.8.9"
 
 [dependencies.uuid]
 version = "1.23.2"
