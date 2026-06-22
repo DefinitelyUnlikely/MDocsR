@@ -1,9 +1,15 @@
 use crate::db::create_pool;
 use std::env;
+use sqlx::PgPool;
 
 pub mod common;
 mod db;
 pub mod features;
+
+#[derive(Clone)]
+struct AppState {
+    db_pool: PgPool
+}
 
 #[tokio::main]
 async fn main() {
@@ -13,4 +19,5 @@ async fn main() {
     let pool = create_pool(&database_url)
         .await
         .expect("Failed to create database pool");
+    let state = AppState { db_pool: pool };
 }
