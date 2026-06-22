@@ -33,6 +33,7 @@ impl RefreshToken {
 }
 
 pub async fn find_refresh_token(value: String, pool: &PgPool) -> Option<RefreshToken> {
+    println!("Fetching refresh token with value {}", value);
     let token = sqlx::query_as!(
         RefreshToken,
         "SELECT * FROM refresh_tokens WHERE token = $1",
