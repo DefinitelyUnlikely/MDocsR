@@ -1,2 +1,2 @@
-pub mod user;
 pub mod fetch_user;
+pub mod user;

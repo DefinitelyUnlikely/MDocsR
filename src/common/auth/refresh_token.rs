@@ -1,7 +1,9 @@
+use crate::common::error::Error;
+use crate::features::users;
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 use sqlx::PgPool;
-use crate::common::error::Error;
+use std::result;
 
 #[derive(sqlx::FromRow)]
 pub struct RefreshToken {
@@ -31,9 +33,13 @@ impl RefreshToken {
 }
 
 pub async fn find_refresh_token(value: String, pool: &PgPool) -> Option<RefreshToken> {
-    let token = sqlx::query_as!(RefreshToken, "SELECT * FROM refresh_tokens WHERE token = $1", value)
-        .fetch_one(pool)
-        .await;
+    let token = sqlx::query_as!(
+        RefreshToken,
+        "SELECT * FROM refresh_tokens WHERE token = $1",
+        value
+    )
+    .fetch_one(pool)
+    .await;
 
     if token.is_err() {
         None
@@ -42,12 +48,20 @@ pub async fn find_refresh_token(value: String, pool: &PgPool) -> Option<RefreshT
     }
 }
 
-pub async fn consume_refresh_token(token: RefreshToken) -> Result<bool, Error> {
-    // check the expiration date.
-    // delete the token (no matter what)
-    // look up that the refresh token user id exists in our database
-    // and return a result based on these actions.
-    todo!()
+/// Validates and consumes a refresh token. Returns a Result<bool, Error>
+/// to indicate if the token was valid or not.
+pub async fn consume_refresh_token(token: RefreshToken, pool: &PgPool) -> Result<bool, Error> {
+    let delete_result = sqlx::query!("DELETE FROM refresh_tokens WHERE token = $1", token.token)
+        .execute(pool)
+        .await?;
+
+    if RefreshToken::is_expired(&token) {
+        return Ok(false);
+    }
+
+    let user = users::fetch_user::fetch_user_by_id(token.user_id, pool).await;
+
+    if user.is_err() { Ok(false) } else { Ok(true) }
 }
 
 // Tests
