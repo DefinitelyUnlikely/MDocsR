@@ -1,6 +1,12 @@
 use crate::db::create_pool;
 use std::env;
-use axum::Router;
+use axum::{
+    response::{IntoResponse, Redirect},
+    routing::{get, post},
+    Router,
+    http::StatusCode
+};
+use axum_extra::extract::cookie::{Cookie, CookieJar};
 use sqlx::PgPool;
 
 pub mod common;
@@ -23,7 +29,19 @@ async fn main() {
     let state = AppState { db_pool: pool };
 
     let app = Router::new()
-        .route("token/refresh", )
+        .route("token/refresh", get(refresh_token))
+        .with_state(&state);
 }
 
-async fn refresh_token()
+async fn refresh_token(jar: CookieJar) -> impl IntoResponse {
+    if let Some(token) = jar.get("refresh_token") {
+        // TODO: Implement this branch
+        let new_jar = jar
+            .add(Cookie::new("access_token", "placeholder"))
+            .add(Cookie::new("refresh_token", "placeholder"));
+
+        (new_jar, (StatusCode::OK, "Token refreshed")).into_response()
+    } else {
+        (StatusCode::BAD_REQUEST, "No refresh token in cookies").into_response()
+    }
+}
