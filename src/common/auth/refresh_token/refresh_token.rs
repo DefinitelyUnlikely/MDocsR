@@ -1,6 +1,5 @@
 use crate::common::auth::refresh_token::db::find_refresh_token;
 use crate::common::error::Error;
-use crate::features::users::db::fetch_user_by_id;
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 use sqlx::PgPool;
@@ -50,7 +49,7 @@ pub async fn consume_refresh_token(value: String, pool: &PgPool) -> Result<bool,
         return Ok(false);
     }
 
-    let user = fetch_user_by_id(&token.user_id, pool).await;
+
 
     if user.is_err() { Ok(false) } else { Ok(true) }
 }
