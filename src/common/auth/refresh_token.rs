@@ -4,6 +4,7 @@ use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 use sqlx::PgPool;
 use std::result;
+use crate::features::users::db::fetch_user_by_id;
 
 #[derive(sqlx::FromRow)]
 pub struct RefreshToken {
@@ -67,7 +68,7 @@ pub async fn consume_refresh_token(value: String, pool: &PgPool) -> Result<bool,
         return Ok(false);
     }
 
-    let user = users::fetch_user::fetch_user_by_id(token.user_id, pool).await;
+    let user = fetch_user_by_id(&token.user_id, pool).await;
 
     if user.is_err() { Ok(false) } else { Ok(true) }
 }
