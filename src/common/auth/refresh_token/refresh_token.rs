@@ -1,8 +1,8 @@
-use crate::common::auth::refresh_token::db::find_refresh_token;
 use crate::common::error::Error;
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 use sqlx::PgPool;
+use crate::common::auth::refresh_token::db::RefreshTokenRepository;
 
 #[derive(sqlx::FromRow)]
 pub struct RefreshToken {
@@ -31,25 +31,20 @@ impl RefreshToken {
     }
 }
 
-/// Validates and consumes a refresh token value. Returns a Result<bool, Error>
-/// to indicate if the token was valid or not.
-pub async fn consume_refresh_token(value: String, pool: &PgPool) -> Result<bool, Error> {
-    let option_token = find_refresh_token(&value, pool).await;
+pub struct RefreshTokenService {
+    refresh_token_repo: RefreshTokenRepository
+}
 
-    let token = match option_token {
-        Some(token) => token,
-        None => return Ok(false),
-    };
-
-    let _delete_result = sqlx::query!("DELETE FROM refresh_tokens WHERE token = $1", token.token)
-        .execute(pool)
-        .await;
-
-    if RefreshToken::is_expired(&token) {
-        return Ok(false);
+impl RefreshTokenService {
+    pub fn new(refresh_token_repo: RefreshTokenRepository) -> Self {
+        RefreshTokenService { refresh_token_repo }
     }
 
-    if user.is_err() { Ok(false) } else { Ok(true) }
+    /// Validates and consumes a refresh token value. Returns a Result<bool, Error>
+    /// to indicate if the token was valid or not.
+    pub async fn consume_refresh_token(value: String) -> Result<bool, Error> {
+
+    }
 }
 
 // Tests

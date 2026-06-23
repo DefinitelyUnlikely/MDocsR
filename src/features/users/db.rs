@@ -2,7 +2,7 @@ use crate::common::error::Error;
 use crate::features::users::user::User;
 use sqlx::PgPool;
 
-struct UserRepository {
+pub struct UserRepository {
     pool: PgPool,
 }
 

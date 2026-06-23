@@ -1,7 +1,7 @@
 use crate::common::auth::refresh_token::refresh_token::RefreshToken;
 use sqlx::{Error, PgPool};
 
-struct RefreshTokenRepository {
+pub struct RefreshTokenRepository {
     pool: PgPool,
 }
 
