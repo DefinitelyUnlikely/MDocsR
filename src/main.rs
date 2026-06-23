@@ -26,11 +26,13 @@ async fn main() {
     let pool = create_pool(&database_url)
         .await
         .expect("Failed to create database pool");
-    let state = AppState { db_pool: pool };
 
     let app = Router::new()
-        .route("token/refresh", get(refresh_token))
-        .with_state(&state);
+        .route("/token/refresh", get(refresh_token))
+        .with_state(AppState { db_pool: pool });
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 async fn refresh_token(jar: CookieJar) -> impl IntoResponse {
