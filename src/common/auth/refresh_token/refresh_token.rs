@@ -1,9 +1,9 @@
+use crate::common::auth::refresh_token::db::find_refresh_token;
 use crate::common::error::Error;
+use crate::features::users::db::fetch_user_by_id;
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 use sqlx::PgPool;
-use crate::common::auth::refresh_token::db::find_refresh_token;
-use crate::features::users::db::fetch_user_by_id;
 
 #[derive(sqlx::FromRow)]
 pub struct RefreshToken {
@@ -42,7 +42,7 @@ pub async fn consume_refresh_token(value: String, pool: &PgPool) -> Result<bool,
         None => return Ok(false),
     };
 
-    let _delete_result =  sqlx::query!("DELETE FROM refresh_tokens WHERE token = $1", token.token)
+    let _delete_result = sqlx::query!("DELETE FROM refresh_tokens WHERE token = $1", token.token)
         .execute(pool)
         .await;
 

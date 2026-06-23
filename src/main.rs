@@ -1,13 +1,13 @@
 use crate::db::create_pool;
-use std::env;
 use axum::{
+    Router,
+    http::StatusCode,
     response::{IntoResponse, Redirect},
     routing::{get, post},
-    Router,
-    http::StatusCode
 };
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use sqlx::PgPool;
+use std::env;
 
 pub mod common;
 mod db;
@@ -15,7 +15,7 @@ pub mod features;
 
 #[derive(Clone)]
 struct AppState {
-    db_pool: PgPool
+    db_pool: PgPool,
 }
 
 #[tokio::main]

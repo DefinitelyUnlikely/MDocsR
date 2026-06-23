@@ -1,5 +1,5 @@
-use sqlx::PgPool;
 use crate::common::auth::refresh_token::refresh_token::RefreshToken;
+use sqlx::PgPool;
 
 pub async fn find_refresh_token(value: &str, pool: &PgPool) -> Option<RefreshToken> {
     println!("Fetching refresh token with value {}", value);
@@ -8,8 +8,8 @@ pub async fn find_refresh_token(value: &str, pool: &PgPool) -> Option<RefreshTok
         "SELECT * FROM refresh_tokens WHERE token = $1",
         value
     )
-        .fetch_one(pool)
-        .await;
+    .fetch_one(pool)
+    .await;
 
     if token.is_err() {
         None
