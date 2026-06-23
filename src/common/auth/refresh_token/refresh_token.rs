@@ -43,7 +43,7 @@ impl RefreshTokenService {
     /// Validates and consumes a refresh token value. Returns a Result<bool, Error>
     /// to indicate if the token was valid or not.
     pub async fn consume_refresh_token(value: String) -> Result<bool, Error> {
-
+        
     }
 }
 
