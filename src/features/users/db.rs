@@ -20,4 +20,3 @@ impl UserRepository {
         Ok(user)
     }
 }
-

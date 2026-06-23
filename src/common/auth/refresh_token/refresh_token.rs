@@ -49,8 +49,6 @@ pub async fn consume_refresh_token(value: String, pool: &PgPool) -> Result<bool,
         return Ok(false);
     }
 
-
-
     if user.is_err() { Ok(false) } else { Ok(true) }
 }
 

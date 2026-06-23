@@ -1,6 +1,5 @@
 use crate::common::auth::refresh_token::refresh_token::RefreshToken;
-use sqlx::PgPool;
-
+use sqlx::{Error, PgPool};
 
 struct RefreshTokenRepository {
     pool: PgPool,
@@ -11,21 +10,16 @@ impl RefreshTokenRepository {
         Self { pool }
     }
 
-    pub async fn find_refresh_token(&self, value: &str) -> Option<RefreshToken> {
+    pub async fn find_refresh_token(&self, value: &str) -> Result<Option<RefreshToken>, Error> {
         println!("Fetching refresh token with value {}", value);
         let token = sqlx::query_as!(
-        RefreshToken,
-        "SELECT * FROM refresh_tokens WHERE token = $1",
-        value
-    )
-            .fetch_one(&self.pool)
-            .await;
+            RefreshToken,
+            "SELECT * FROM refresh_tokens WHERE token = $1",
+            value
+        )
+        .fetch_optional(&self.pool)
+        .await?;
 
-        if token.is_err() {
-            None
-        } else {
-            Some(token.unwrap())
-        }
+        Ok(token)
     }
 }
-
