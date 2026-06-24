@@ -47,8 +47,9 @@ impl TokensService {
             Ok(j) => {j}
             Err(_err) => return Err(Error::Failure)
         };
-
         let refresh_token = RefreshToken::new(token.user_id);
+        self.refresh_token_repo.save_refresh_token(&refresh_token).await?;
+        
         Ok(TokensResponse::new(refresh_token.token, jwt_token))
     }
 
