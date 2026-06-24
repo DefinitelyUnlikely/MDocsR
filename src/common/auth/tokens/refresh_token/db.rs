@@ -1,4 +1,4 @@
-use crate::common::auth::refresh_token::refresh_token::RefreshToken;
+use crate::common::auth::tokens::refresh_token::refresh_token::RefreshToken;
 use sqlx::{Error, PgPool};
 
 /// A repository implementing CRD. Update function does
