@@ -13,7 +13,7 @@ struct Claims {
     sub: String,
 }
 
-fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
+pub fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
     let seconds_to_expire: u64 = env::var("EXPIRATION_IN_SECONDS")
         .unwrap_or(String::from("900"))
         .parse()
@@ -29,7 +29,7 @@ fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
     encode(&Header::default(), &claims, &secret)
 }
 
-fn decode_jwt(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
+pub fn decode_jwt(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
     let secret = DecodingKey::from_secret(env::var("JWT_KEY").expect("JWT_KEY not set!").as_ref());
     let mut validation = Validation::new(Algorithm::HS256);
 

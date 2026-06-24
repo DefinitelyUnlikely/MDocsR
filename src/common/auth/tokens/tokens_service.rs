@@ -38,7 +38,7 @@ impl TokensService {
         let valid = self.consume_refresh_token(&token).await?;
 
         let refresh_token = RefreshToken::new(token.user_id);
-        let jwt_token =
+        let jwt_token = create_jwt();
 
     }
 
