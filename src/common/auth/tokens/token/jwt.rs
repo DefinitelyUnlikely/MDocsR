@@ -29,7 +29,7 @@ fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> {
     encode(&Header::default(), &claims, &secret)
 }
 
-fn decode_token(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
+fn decode_jwt(token: &str) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
     let secret = DecodingKey::from_secret(env::var("JWT_KEY").expect("JWT_KEY not set!").as_ref());
     let mut validation = Validation::new(Algorithm::HS256);
 
@@ -68,7 +68,7 @@ mod tests {
 
         let token = create_jwt(user_id).expect("Failed to create JWT");
         assert!(!token.is_empty());
-        let token_data = decode_token(&token).expect("Failed to decode JWT");
+        let token_data = decode_jwt(&token).expect("Failed to decode JWT");
 
         assert_eq!(token_data.claims.sub, user_id);
         assert_eq!(token_data.claims.aud, env::var("JWT_AUDIENCE").unwrap());
