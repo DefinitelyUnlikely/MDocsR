@@ -3,6 +3,7 @@ use crate::common::auth::tokens::refresh_token::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt;
 use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::error::Error;
+use crate::features::users::db::UserRepository;
 
 struct TokensResponse {
     refresh_token_value: String,
@@ -16,11 +17,12 @@ impl TokensResponse {
 }
 pub struct TokensService {
     refresh_token_repo: RefreshTokenRepository,
+    user_repo: UserRepository,
 }
 
 impl TokensService {
-    pub fn new(refresh_token_repo: RefreshTokenRepository) -> Self {
-        TokensService { refresh_token_repo }
+    pub fn new(refresh_token_repo: RefreshTokenRepository, user_repo: UserRepository) -> Self {
+        TokensService { refresh_token_repo, user_repo }
     }
 
     pub async fn refresh_tokens(&self, ref_token_value: &str) -> Result<TokensResponse, Error> {
@@ -53,6 +55,7 @@ impl TokensService {
     /// Validates and consumes a refresh token value. Returns a Result<bool, Error>
     /// to indicate if the token was valid or not.
     async fn consume_refresh_token(&self, token: &RefreshToken) -> Result<bool, Error> {
+        let user = self.
     }
 
 }
