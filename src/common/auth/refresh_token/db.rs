@@ -10,6 +10,20 @@ impl RefreshTokenRepository {
         Self { pool }
     }
 
+    pub async fn save_refresh_token(&self, token: &RefreshToken) -> Result<bool, Error> {
+        println!("Saving refresh token");
+
+        let result = sqlx::query!(
+            "INSERT INTO refresh_tokens (token, user_id, expires) VALUES ($1, $2, $3)",
+            token.token,
+            token.user_id,
+            token.expires
+        ).execute(&self.pool).await?;
+        
+        Ok(result.rows_affected() == 1)
+        
+    }
+
     pub async fn find_refresh_token(&self, value: &str) -> Result<Option<RefreshToken>, Error> {
         println!("Fetching refresh token with value {}", value);
         let token = sqlx::query_as!(
