@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Claims {
+pub struct Claims {
     aud: String,
     exp: u64,
     iss: String,

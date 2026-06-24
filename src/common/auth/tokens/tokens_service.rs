@@ -5,7 +5,7 @@ use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::error::Error;
 use crate::features::users::db::UserRepository;
 
-struct TokensResponse {
+pub struct TokensResponse {
     refresh_token_value: String,
     jwt_token: String,
 }
@@ -55,7 +55,22 @@ impl TokensService {
     /// Validates and consumes a refresh token value. Returns a Result<bool, Error>
     /// to indicate if the token was valid or not.
     async fn consume_refresh_token(&self, token: &RefreshToken) -> Result<bool, Error> {
-        let user = self.
+        if token.is_expired() {
+            return Ok(false)
+        }
+        
+        if let None = self.user_repo.fetch_user_by_id(&token.user_id).await? {
+            // TODO: Trace this somewhat unusual case 
+            return Ok(false)
+        }
+        
+        let delete_affected = self.refresh_token_repo.delete_refresh_token(&token.token).await?;
+        
+        if delete_affected == 0 {
+            println!("Log this! A token was not deleted even thought it should have existed just prior")
+        }
+        
+        Ok(true)
     }
 
 }
