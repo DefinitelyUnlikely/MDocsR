@@ -1,6 +1,5 @@
 use crate::common::auth::tokens::refresh_token::db::RefreshTokenRepository;
 use crate::common::auth::tokens::refresh_token::refresh_token::RefreshToken;
-use crate::common::auth::tokens::token::jwt;
 use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::error::Error;
 use crate::features::users::db::UserRepository;
@@ -12,7 +11,10 @@ pub struct TokensResponse {
 
 impl TokensResponse {
     fn new(refresh_token_value: String, jwt_token: String) -> Self {
-        TokensResponse { refresh_token_value, jwt_token }
+        TokensResponse {
+            refresh_token_value,
+            jwt_token,
+        }
     }
 }
 pub struct TokensService {
@@ -22,19 +24,25 @@ pub struct TokensService {
 
 impl TokensService {
     pub fn new(refresh_token_repo: RefreshTokenRepository, user_repo: UserRepository) -> Self {
-        TokensService { refresh_token_repo, user_repo }
+        TokensService {
+            refresh_token_repo,
+            user_repo,
+        }
     }
-    
+
     /// This function takes a refresh token value, ensures it exists in the repository,
     /// is still valid, deletes the old refresh token and then generates a TokensResponse
     /// that contains a new short-lived JWT and a new refresh token.
     pub async fn refresh_tokens(&self, ref_token_value: &str) -> Result<TokensResponse, Error> {
-        let token_result = self.refresh_token_repo.find_refresh_token(ref_token_value).await;
+        let token_result = self
+            .refresh_token_repo
+            .find_refresh_token(ref_token_value)
+            .await;
 
         let opt_token = match token_result {
             Ok(t) => t,
             Err(sqlx::error::Error::RowNotFound) => return Err(Error::Unauthorized),
-            _ => return Err(Error::Failure)
+            _ => return Err(Error::Failure),
         };
 
         let Some(token) = opt_token else {
@@ -42,16 +50,20 @@ impl TokensService {
         };
 
         let valid = self.consume_refresh_token(&token).await?;
-        if !valid { return Err(Error::Unauthorized); }
+        if !valid {
+            return Err(Error::Unauthorized);
+        }
 
         let jwt_result = create_jwt(&token.user_id);
 
         let jwt_token = match jwt_result {
-            Ok(j) => {j}
-            Err(_err) => return Err(Error::Failure)
+            Ok(j) => j,
+            Err(_err) => return Err(Error::Failure),
         };
         let refresh_token = RefreshToken::new(token.user_id);
-        self.refresh_token_repo.save_refresh_token(&refresh_token).await?;
+        self.refresh_token_repo
+            .save_refresh_token(&refresh_token)
+            .await?;
 
         Ok(TokensResponse::new(refresh_token.token, jwt_token))
     }
@@ -60,21 +72,25 @@ impl TokensService {
     /// Returns a Result<bool, Error> to indicate if the token was valid or not.
     async fn consume_refresh_token(&self, token: &RefreshToken) -> Result<bool, Error> {
         if token.is_expired() {
-            return Ok(false)
+            return Ok(false);
         }
 
         if let None = self.user_repo.fetch_user_by_id(&token.user_id).await? {
             // TODO: Trace this somewhat unusual case
-            return Ok(false)
+            return Ok(false);
         }
 
-        let delete_affected = self.refresh_token_repo.delete_refresh_token(&token.token).await?;
+        let delete_affected = self
+            .refresh_token_repo
+            .delete_refresh_token(&token.token)
+            .await?;
 
         if delete_affected == 0 {
-            println!("Log this! A token was not deleted even thought it should have existed just prior")
+            println!(
+                "Log this! A token was not deleted even thought it should have existed just prior"
+            )
         }
 
         Ok(true)
     }
-
 }

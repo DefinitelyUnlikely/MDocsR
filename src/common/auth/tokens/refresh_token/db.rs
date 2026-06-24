@@ -22,7 +22,9 @@ impl RefreshTokenRepository {
             token.token,
             token.user_id,
             token.expires
-        ).execute(&self.pool).await?;
+        )
+        .execute(&self.pool)
+        .await?;
 
         Ok(result.rows_affected() == 1)
     }
