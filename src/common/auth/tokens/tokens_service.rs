@@ -49,28 +49,28 @@ impl TokensService {
         };
         let refresh_token = RefreshToken::new(token.user_id);
         self.refresh_token_repo.save_refresh_token(&refresh_token).await?;
-        
+
         Ok(TokensResponse::new(refresh_token.token, jwt_token))
     }
 
-    /// Validates and consumes a refresh token value. Returns a Result<bool, Error>
-    /// to indicate if the token was valid or not.
+    /// Validates a borrowed refresh token and remove it from the database.
+    /// Returns a Result<bool, Error> to indicate if the token was valid or not.
     async fn consume_refresh_token(&self, token: &RefreshToken) -> Result<bool, Error> {
         if token.is_expired() {
             return Ok(false)
         }
-        
+
         if let None = self.user_repo.fetch_user_by_id(&token.user_id).await? {
-            // TODO: Trace this somewhat unusual case 
+            // TODO: Trace this somewhat unusual case
             return Ok(false)
         }
-        
+
         let delete_affected = self.refresh_token_repo.delete_refresh_token(&token.token).await?;
-        
+
         if delete_affected == 0 {
             println!("Log this! A token was not deleted even thought it should have existed just prior")
         }
-        
+
         Ok(true)
     }
 
