@@ -19,9 +19,8 @@ impl RefreshTokenRepository {
             token.user_id,
             token.expires
         ).execute(&self.pool).await?;
-        
+
         Ok(result.rows_affected() == 1)
-        
     }
 
     pub async fn find_refresh_token(&self, value: &str) -> Result<Option<RefreshToken>, Error> {
