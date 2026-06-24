@@ -24,7 +24,10 @@ impl TokensService {
     pub fn new(refresh_token_repo: RefreshTokenRepository, user_repo: UserRepository) -> Self {
         TokensService { refresh_token_repo, user_repo }
     }
-
+    
+    /// This function takes a refresh token value, ensures it exists in the repository,
+    /// is still valid, deletes the old refresh token and then generates a TokensResponse
+    /// that contains a new short-lived JWT and a new refresh token.
     pub async fn refresh_tokens(&self, ref_token_value: &str) -> Result<TokensResponse, Error> {
         let token_result = self.refresh_token_repo.find_refresh_token(ref_token_value).await;
 
