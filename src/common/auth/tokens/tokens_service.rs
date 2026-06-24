@@ -1,6 +1,7 @@
 use crate::common::auth::tokens::refresh_token::db::RefreshTokenRepository;
 use crate::common::auth::tokens::refresh_token::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt;
+use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::error::Error;
 
 struct TokensResponse {
@@ -36,10 +37,17 @@ impl TokensService {
         };
 
         let valid = self.consume_refresh_token(&token).await?;
+        if !valid { return Err(Error::Unauthorized); }
+
+        let jwt_result = create_jwt(&token.user_id);
+
+        let jwt_token = match jwt_result {
+            Ok(j) => {j}
+            Err(_err) => return Err(Error::Failure)
+        };
 
         let refresh_token = RefreshToken::new(token.user_id);
-        let jwt_token = create_jwt();
-
+        Ok(TokensResponse::new(refresh_token.token, jwt_token))
     }
 
     /// Validates and consumes a refresh token value. Returns a Result<bool, Error>
