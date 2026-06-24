@@ -1,8 +1,8 @@
+use crate::common::auth::refresh_token::db::RefreshTokenRepository;
 use crate::common::error::Error;
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 use sqlx::PgPool;
-use crate::common::auth::refresh_token::db::RefreshTokenRepository;
 
 #[derive(sqlx::FromRow)]
 pub struct RefreshToken {
@@ -32,7 +32,7 @@ impl RefreshToken {
 }
 
 pub struct RefreshTokenService {
-    refresh_token_repo: RefreshTokenRepository
+    refresh_token_repo: RefreshTokenRepository,
 }
 
 impl RefreshTokenService {
@@ -42,8 +42,8 @@ impl RefreshTokenService {
 
     /// Validates and consumes a refresh token value. Returns a Result<bool, Error>
     /// to indicate if the token was valid or not.
-    pub async fn consume_refresh_token(value: String) -> Result<bool, Error> {
-        
+    pub async fn consume_refresh_token(&self, value: String) -> Result<bool, Error> {
+        let opt_token = self.refresh_token_repo.find_refresh_token(&value).await;
     }
 }
 

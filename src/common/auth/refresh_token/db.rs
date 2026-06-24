@@ -23,9 +23,11 @@ impl RefreshTokenRepository {
         Ok(token)
     }
 
-    pub async fn delete_refresh_token(&self, token: &RefreshToken) -> Result<(), Error> {
+    pub async fn delete_refresh_token(&self, token: &RefreshToken) -> Result<u64, Error> {
         let result = sqlx::query!("DELETE FROM refresh_tokens WHERE token = $1", token.token)
             .execute(&self.pool)
-            .await;
+            .await?;
+
+        Ok(result.rows_affected())
     }
 }
