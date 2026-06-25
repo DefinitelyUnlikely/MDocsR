@@ -3,6 +3,7 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{
     Router,
+    extract::State,
     routing::{get, post},
 };
 use axum_extra::extract::CookieJar;
@@ -12,7 +13,7 @@ pub fn router() -> Router<AppState> {
     Router::new().route("/refresh-tokens", post(refresh_tokens))
 }
 
-async fn refresh_tokens(jar: CookieJar) -> impl IntoResponse {
+async fn refresh_tokens(State(state): State<AppState>, jar: CookieJar) -> impl IntoResponse {
     let Some(token) = jar.get("refresh_token") else {
         return (StatusCode::BAD_REQUEST, "No refresh token in cookies").into_response();
     };
