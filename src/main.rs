@@ -14,7 +14,7 @@ mod db;
 pub mod features;
 
 #[derive(Clone)]
-struct AppState {
+pub struct AppState {
     db_pool: PgPool,
 }
 
