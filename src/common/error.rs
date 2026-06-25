@@ -9,9 +9,9 @@ pub enum Error {
     Validation,
 }
 
-impl Into<StatusCode> for Error {
-    fn into(self) -> StatusCode {
-        match self {
+impl From<Error> for StatusCode {
+    fn from(err: Error) -> StatusCode {
+        match err {
             Error::Conflict => StatusCode::CONFLICT,
             Error::Failure => StatusCode::INTERNAL_SERVER_ERROR,
             Error::Forbidden => StatusCode::FORBIDDEN,

@@ -27,10 +27,10 @@ async fn refresh_tokens(State(state): State<AppState>, jar: CookieJar) -> impl I
     let tokens_result = token_service.refresh_tokens(&token.value()).await;
     let tokens = match tokens_result {
         Ok(t) => t,
-        Err(e) => e,
+        Err(e) => e.into(),
     }
-    
-    
+
+
 
     let new_jar = jar
         .add(Cookie::new("access_token", "placeholder"))
