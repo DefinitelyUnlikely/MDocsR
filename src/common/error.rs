@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 
 pub enum Error {
     Conflict,
@@ -19,6 +20,13 @@ impl From<Error> for StatusCode {
             Error::Unauthorized => StatusCode::UNAUTHORIZED,
             Error::Validation => StatusCode::BAD_REQUEST,
         }
+    }
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> Response {
+        let status = StatusCode::from(self);
+        status.into_response()
     }
 }
 
