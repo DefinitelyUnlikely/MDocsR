@@ -1,4 +1,8 @@
 use crate::AppState;
+use crate::common::auth::tokens::refresh_token::db::RefreshTokenRepository;
+use crate::common::auth::tokens::tokens_service::TokensService;
+use crate::common::error::Error;
+use crate::features::users::db::UserRepository;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{
@@ -7,17 +11,16 @@ use axum::{
     routing::{get, post},
 };
 use axum_extra::extract::CookieJar;
-use axum_extra::extract::cookie::Cookie;
-use crate::common::auth::tokens::refresh_token::db::RefreshTokenRepository;
-use crate::common::auth::tokens::tokens_service::TokensService;
-use crate::common::error::Error;
-use crate::features::users::db::UserRepository;
+use axum_extra::extract::cookie::{Cookie, SameSite};
 
 pub fn router() -> Router<AppState> {
     Router::new().route("/refresh-tokens", post(refresh_tokens))
 }
 
-async fn refresh_tokens(State(state): State<AppState>, jar: CookieJar) -> Result<impl IntoResponse, Error> {
+async fn refresh_tokens(
+    State(state): State<AppState>,
+    jar: CookieJar,
+) -> Result<impl IntoResponse, Error> {
     let Some(token) = jar.get("refresh_token") else {
         return Ok((StatusCode::BAD_REQUEST, "No refresh token in cookies").into_response());
     };
@@ -27,9 +30,19 @@ async fn refresh_tokens(State(state): State<AppState>, jar: CookieJar) -> Result
     let token_service = TokensService::new(token_repo, user_repo);
     let tokens = token_service.refresh_tokens(&token.value()).await?;
 
-    let new_jar = jar
-        .add(Cookie::new("access_token", "placeholder"))
-        .add(Cookie::new("refresh_token", "placeholder"));
+    let access_cookie = Cookie::build(("access_token", tokens.jwt_token))
+        .path("/")
+        .http_only(true)
+        .secure(true) // Forces HTTPS (strongly recommended)
+        .same_site(SameSite::Strict) // Protects against CSRF
+        .build();
+    let refresh_cookie = Cookie::build(("refresh_token", tokens.refresh_token_value))
+        .path("/")
+        .http_only(true)
+        .secure(true) // Forces HTTPS (strongly recommended)
+        .same_site(SameSite::Strict) // Protects against CSRF
+        .build();
+    let new_jar = jar.add(access_cookie).add(refresh_cookie);
 
-    (new_jar, (StatusCode::OK, "Token refreshed")).into_response()
+    Ok((new_jar, (StatusCode::OK, "Token refreshed")).into_response())
 }

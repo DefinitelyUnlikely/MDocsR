@@ -5,8 +5,8 @@ use crate::common::error::Error;
 use crate::features::users::db::UserRepository;
 
 pub struct TokensResponse {
-    refresh_token_value: String,
-    jwt_token: String,
+    pub refresh_token_value: String,
+    pub jwt_token: String,
 }
 
 impl TokensResponse {
