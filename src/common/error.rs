@@ -1,3 +1,5 @@
+use axum::http::StatusCode;
+
 pub enum Error {
     Conflict,
     Failure,
@@ -5,6 +7,19 @@ pub enum Error {
     NotFound,
     Unauthorized,
     Validation,
+}
+
+impl Into<StatusCode> for Error {
+    fn into(self) -> StatusCode {
+        match self {
+            Error::Conflict => StatusCode::CONFLICT,
+            Error::Failure => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::Forbidden => StatusCode::FORBIDDEN,
+            Error::NotFound => StatusCode::NOT_FOUND,
+            Error::Unauthorized => StatusCode::UNAUTHORIZED,
+            Error::Validation => StatusCode::BAD_REQUEST,
+        }
+    }
 }
 
 // TODO: Add more errors

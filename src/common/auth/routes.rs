@@ -24,7 +24,12 @@ async fn refresh_tokens(State(state): State<AppState>, jar: CookieJar) -> impl I
     let user_repo = UserRepository::new(state.db_pool.clone());
 
     let token_service = TokensService::new(token_repo, user_repo);
-    let tokens = token_service.refresh_tokens(&token.value()).await;
+    let tokens_result = token_service.refresh_tokens(&token.value()).await;
+    let tokens = match tokens_result {
+        Ok(t) => t,
+        Err(e) => e,
+    }
+    
     
 
     let new_jar = jar
