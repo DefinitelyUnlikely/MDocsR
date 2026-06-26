@@ -39,14 +39,14 @@ async fn refresh_tokens(
     let access_cookie = Cookie::build(("access_token", tokens.jwt_token))
         .path("/")
         .http_only(true)
-        .secure(true) // Forces HTTPS (strongly recommended)
-        .same_site(SameSite::Strict) // Protects against CSRF
+        .secure(true)
+        .same_site(SameSite::Strict)
         .build();
     let refresh_cookie = Cookie::build(("refresh", tokens.refresh_token_value))
         .path("/")
         .http_only(true)
-        .secure(true) // Forces HTTPS (strongly recommended)
-        .same_site(SameSite::Strict) // Protects against CSRF
+        .secure(true)
+        .same_site(SameSite::Strict)
         .build();
     let new_jar = jar.add(access_cookie).add(refresh_cookie);
 
