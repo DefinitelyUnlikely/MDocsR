@@ -13,7 +13,10 @@ pub struct Claims {
     pub sub: String,
 }
 
-pub fn create_jwt(user_id: &str, config: &AuthConfig) -> Result<String, jsonwebtoken::errors::Error> {
+pub fn create_jwt(
+    user_id: &str,
+    config: &AuthConfig,
+) -> Result<String, jsonwebtoken::errors::Error> {
     let claims = Claims {
         aud: config.jwt_audience.clone(),
         exp: get_current_timestamp() + config.jwt_expiration_seconds,
@@ -25,7 +28,10 @@ pub fn create_jwt(user_id: &str, config: &AuthConfig) -> Result<String, jsonwebt
     encode(&Header::default(), &claims, &secret)
 }
 
-pub fn decode_jwt(token: &str, config: &AuthConfig) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
+pub fn decode_jwt(
+    token: &str,
+    config: &AuthConfig,
+) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
     let secret = DecodingKey::from_secret(config.jwt_key.as_bytes());
     let mut validation = Validation::new(Algorithm::HS256);
 
