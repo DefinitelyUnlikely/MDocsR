@@ -1,5 +1,5 @@
 use crate::AppState;
-use crate::common::auth::tokens::refresh_token::db::RefreshTokenRepository;
+use crate::common::auth::tokens::refresh::db::RefreshTokenRepository;
 use crate::common::auth::tokens::tokens_service::TokensService;
 use crate::common::error::Error;
 use crate::features::users::db::UserRepository;
@@ -27,14 +27,14 @@ async fn refresh_tokens(
     State(state): State<AppState>,
     jar: CookieJar,
 ) -> Result<impl IntoResponse, Error> {
-    let Some(token) = jar.get("refresh_token") else {
+    let Some(token) = jar.get("refresh") else {
         return Ok((StatusCode::BAD_REQUEST, "No refresh token in cookies").into_response());
     };
     let token_repo = RefreshTokenRepository::new(state.db_pool.clone());
     let user_repo = UserRepository::new(state.db_pool.clone());
 
     let token_service = TokensService::new(token_repo, user_repo);
-    let tokens = token_service.refresh_tokens(&token.value()).await?;
+    let tokens = token_service.refresh_tokens(token.value()).await?;
 
     let access_cookie = Cookie::build(("access_token", tokens.jwt_token))
         .path("/")
@@ -42,7 +42,7 @@ async fn refresh_tokens(
         .secure(true) // Forces HTTPS (strongly recommended)
         .same_site(SameSite::Strict) // Protects against CSRF
         .build();
-    let refresh_cookie = Cookie::build(("refresh_token", tokens.refresh_token_value))
+    let refresh_cookie = Cookie::build(("refresh", tokens.refresh_token_value))
         .path("/")
         .http_only(true)
         .secure(true) // Forces HTTPS (strongly recommended)

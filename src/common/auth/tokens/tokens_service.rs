@@ -1,5 +1,5 @@
-use crate::common::auth::tokens::refresh_token::db::RefreshTokenRepository;
-use crate::common::auth::tokens::refresh_token::refresh_token::RefreshToken;
+use crate::common::auth::tokens::refresh::db::RefreshTokenRepository;
+use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::error::Error;
 use crate::features::users::db::UserRepository;
