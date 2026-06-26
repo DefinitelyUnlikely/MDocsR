@@ -1,0 +1,54 @@
+use crate::AppState;
+use crate::common::auth::tokens::refresh::db::PostgresRefreshTokenRepository;
+use crate::common::auth::tokens::tokens_service::TokensService;
+use crate::common::error::Error;
+use crate::features::users::db::PostgresUserRepository;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::{
+    Router,
+    extract::State,
+    routing::{get, post},
+};
+use axum_extra::extract::CookieJar;
+use axum_extra::extract::cookie::{Cookie, SameSite};
+
+pub fn auth_router() -> Router<AppState> {
+    Router::new()
+        .route("/refresh-tokens", post(refresh_tokens))
+        .route("/ping", get(auth_router_ping))
+}
+
+async fn auth_router_ping() -> impl IntoResponse {
+    "Pong".to_string()
+}
+
+async fn refresh_tokens(
+    State(state): State<AppState>,
+    jar: CookieJar,
+) -> Result<impl IntoResponse, Error> {
+    let Some(token) = jar.get("refresh") else {
+        return Ok((StatusCode::BAD_REQUEST, "No refresh token in cookies").into_response());
+    };
+    let token_repo = PostgresRefreshTokenRepository::new(state.db_pool.clone());
+    let user_repo = PostgresUserRepository::new(state.db_pool.clone());
+
+    let token_service = TokensService::new(token_repo, user_repo, state.auth_config.clone());
+    let tokens = token_service.refresh_tokens(token.value()).await?;
+
+    let access_cookie = Cookie::build(("access_token", tokens.jwt_token))
+        .path("/")
+        .http_only(true)
+        .secure(true)
+        .same_site(SameSite::Strict)
+        .build();
+    let refresh_cookie = Cookie::build(("refresh", tokens.refresh_token_value))
+        .path("/")
+        .http_only(true)
+        .secure(true)
+        .same_site(SameSite::Strict)
+        .build();
+    let new_jar = jar.add(access_cookie).add(refresh_cookie);
+
+    Ok((new_jar, (StatusCode::OK, "Token refreshed")).into_response())
+}

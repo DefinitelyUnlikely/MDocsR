@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub struct User {
     pub id: String,
     pub email: String,
@@ -10,6 +11,7 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(sqlx::FromRow)]
 pub struct UserInfo {
     pub id: String,
     pub user_id: String,

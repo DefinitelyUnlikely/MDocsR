@@ -1,6 +1,7 @@
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub struct RefreshToken {
     pub token: String,
     pub user_id: String,
