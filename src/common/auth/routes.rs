@@ -1,8 +1,8 @@
 use crate::AppState;
-use crate::common::auth::tokens::refresh::db::RefreshTokenRepository;
+use crate::common::auth::tokens::refresh::db::PostgresRefreshTokenRepository;
 use crate::common::auth::tokens::tokens_service::TokensService;
 use crate::common::error::Error;
-use crate::features::users::db::UserRepository;
+use crate::features::users::db::PostgresUserRepository;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{
@@ -30,8 +30,8 @@ async fn refresh_tokens(
     let Some(token) = jar.get("refresh") else {
         return Ok((StatusCode::BAD_REQUEST, "No refresh token in cookies").into_response());
     };
-    let token_repo = RefreshTokenRepository::new(state.db_pool.clone());
-    let user_repo = UserRepository::new(state.db_pool.clone());
+    let token_repo = PostgresRefreshTokenRepository::new(state.db_pool.clone());
+    let user_repo = PostgresUserRepository::new(state.db_pool.clone());
 
     let token_service = TokensService::new(token_repo, user_repo);
     let tokens = token_service.refresh_tokens(token.value()).await?;

@@ -17,13 +17,18 @@ impl TokensResponse {
         }
     }
 }
-pub struct TokensService {
-    refresh_token_repo: RefreshTokenRepository,
-    user_repo: UserRepository,
+
+pub struct TokensService<R, U> {
+    refresh_token_repo: R,
+    user_repo: U,
 }
 
-impl TokensService {
-    pub fn new(refresh_token_repo: RefreshTokenRepository, user_repo: UserRepository) -> Self {
+impl<R, U> TokensService<R, U>
+where
+    R: RefreshTokenRepository,
+    U: UserRepository,
+{
+    pub fn new(refresh_token_repo: R, user_repo: U) -> Self {
         TokensService {
             refresh_token_repo,
             user_repo,
@@ -34,16 +39,10 @@ impl TokensService {
     /// is still valid, deletes the old refresh token and then generates a TokensResponse
     /// that contains a new short-lived JWT and a new refresh token.
     pub async fn refresh_tokens(&self, ref_token_value: &str) -> Result<TokensResponse, Error> {
-        let token_result = self
+        let opt_token = self
             .refresh_token_repo
             .find_refresh_token(ref_token_value)
-            .await;
-
-        let opt_token = match token_result {
-            Ok(t) => t,
-            Err(sqlx::error::Error::RowNotFound) => return Err(Error::Unauthorized),
-            _ => return Err(Error::Failure),
-        };
+            .await?;
 
         let Some(token) = opt_token else {
             return Err(Error::Unauthorized);
@@ -97,5 +96,135 @@ impl TokensService {
         }
 
         Ok(true)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Mutex;
+    use crate::features::users::user::User;
+    use chrono::{Utc, Duration};
+
+    struct FakeUserRepository {
+        users: Mutex<Vec<User>>,
+    }
+
+    impl UserRepository for FakeUserRepository {
+        async fn fetch_user_by_id(&self, id: &str) -> Result<Option<User>, Error> {
+            let users = self.users.lock().unwrap();
+            Ok(users.iter().find(|u| u.id == id).cloned())
+        }
+    }
+
+    struct FakeRefreshTokenRepository {
+        tokens: Mutex<Vec<RefreshToken>>,
+    }
+
+    impl RefreshTokenRepository for FakeRefreshTokenRepository {
+        async fn save_refresh_token(&self, token: &RefreshToken) -> Result<bool, sqlx::Error> {
+            let mut tokens = self.tokens.lock().unwrap();
+            tokens.push(token.clone());
+            Ok(true)
+        }
+
+        async fn find_refresh_token(&self, value: &str) -> Result<Option<RefreshToken>, sqlx::Error> {
+            let tokens = self.tokens.lock().unwrap();
+            Ok(tokens.iter().find(|t| t.token == value).cloned())
+        }
+
+        async fn delete_refresh_token(&self, value: &str) -> Result<u64, sqlx::Error> {
+            let mut tokens = self.tokens.lock().unwrap();
+            let initial_len = tokens.len();
+            tokens.retain(|t| t.token != value);
+            Ok((initial_len - tokens.len()) as u64)
+        }
+    }
+
+    // Helper to setup env for JWT creation/decoding in tests
+    fn setup_jwt_env() {
+        use std::sync::Once;
+        static INIT: Once = Once::new();
+        INIT.call_once(|| unsafe {
+            std::env::set_var("JWT_KEY", "test-secret-key-for-jwt-signing");
+            std::env::set_var("JWT_AUDIENCE", "test-audience");
+            std::env::set_var("JWT_ISS", "test-issuer");
+        });
+    }
+
+    #[tokio::test]
+    async fn test_refresh_tokens_success() {
+        setup_jwt_env();
+        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let token = RefreshToken::new(user.id.clone());
+
+        let user_repo = FakeUserRepository {
+            users: Mutex::new(vec![user.clone()]),
+        };
+        let refresh_token_repo = FakeRefreshTokenRepository {
+            tokens: Mutex::new(vec![token.clone()]),
+        };
+
+        let service = TokensService::new(refresh_token_repo, user_repo);
+        let response = service.refresh_tokens(&token.token).await.unwrap();
+
+        assert!(!response.jwt_token.is_empty());
+        assert_ne!(response.refresh_token_value, token.token);
+    }
+
+    #[tokio::test]
+    async fn test_refresh_tokens_expired() {
+        setup_jwt_env();
+        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let mut token = RefreshToken::new(user.id.clone());
+        token.expires = Utc::now() - Duration::days(1); // Set to past
+
+        let user_repo = FakeUserRepository {
+            users: Mutex::new(vec![user.clone()]),
+        };
+        let refresh_token_repo = FakeRefreshTokenRepository {
+            tokens: Mutex::new(vec![token.clone()]),
+        };
+
+        let service = TokensService::new(refresh_token_repo, user_repo);
+        let result = service.refresh_tokens(&token.token).await;
+
+        assert!(matches!(result, Err(Error::Unauthorized)));
+    }
+
+    #[tokio::test]
+    async fn test_refresh_tokens_not_found() {
+        setup_jwt_env();
+        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+
+        let user_repo = FakeUserRepository {
+            users: Mutex::new(vec![user.clone()]),
+        };
+        let refresh_token_repo = FakeRefreshTokenRepository {
+            tokens: Mutex::new(vec![]),
+        };
+
+        let service = TokensService::new(refresh_token_repo, user_repo);
+        let result = service.refresh_tokens("nonexistent_token").await;
+
+        assert!(matches!(result, Err(Error::Unauthorized)));
+    }
+
+    #[tokio::test]
+    async fn test_refresh_tokens_user_not_found() {
+        setup_jwt_env();
+        let token = RefreshToken::new("nonexistent_user".to_string());
+
+        let user_repo = FakeUserRepository {
+            users: Mutex::new(vec![]),
+        };
+        let refresh_token_repo = FakeRefreshTokenRepository {
+            tokens: Mutex::new(vec![token.clone()]),
+        };
+
+        let service = TokensService::new(refresh_token_repo, user_repo);
+        let result = service.refresh_tokens(&token.token).await;
+
+        assert!(matches!(result, Err(Error::Unauthorized)));
     }
 }
