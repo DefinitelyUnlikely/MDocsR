@@ -1,5 +1,3 @@
-use crate::common::auth::tokens::refresh_token::db::RefreshTokenRepository;
-use crate::common::error::Error;
 use chrono::{DateTime, Duration, Utc};
 use rand::prelude::*;
 
