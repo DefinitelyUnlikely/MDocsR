@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  SQLX_OFFLINE: true
+
 jobs:
   ci:
     runs-on: ubuntu-latest
