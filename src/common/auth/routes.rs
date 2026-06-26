@@ -33,7 +33,7 @@ async fn refresh_tokens(
     let token_repo = PostgresRefreshTokenRepository::new(state.db_pool.clone());
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
 
-    let token_service = TokensService::new(token_repo, user_repo);
+    let token_service = TokensService::new(token_repo, user_repo, state.auth_config.clone());
     let tokens = token_service.refresh_tokens(token.value()).await?;
 
     let access_cookie = Cookie::build(("access_token", tokens.jwt_token))

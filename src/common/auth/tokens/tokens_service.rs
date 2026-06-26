@@ -1,3 +1,4 @@
+use crate::common::auth::config::AuthConfig;
 use crate::common::auth::tokens::refresh::db::RefreshTokenRepository;
 use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt::create_jwt;
@@ -21,6 +22,7 @@ impl TokensResponse {
 pub struct TokensService<R, U> {
     refresh_token_repo: R,
     user_repo: U,
+    auth_config: AuthConfig,
 }
 
 impl<R, U> TokensService<R, U>
@@ -28,10 +30,11 @@ where
     R: RefreshTokenRepository,
     U: UserRepository,
 {
-    pub fn new(refresh_token_repo: R, user_repo: U) -> Self {
+    pub fn new(refresh_token_repo: R, user_repo: U, auth_config: AuthConfig) -> Self {
         TokensService {
             refresh_token_repo,
             user_repo,
+            auth_config,
         }
     }
 
@@ -53,7 +56,7 @@ where
             return Err(Error::Unauthorized);
         }
 
-        let jwt_result = create_jwt(&token.user_id);
+        let jwt_result = create_jwt(&token.user_id, &self.auth_config);
 
         let jwt_token = match jwt_result {
             Ok(j) => j,
@@ -102,9 +105,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::features::users::user::User;
-    use chrono::{Duration, Utc};
     use std::sync::Mutex;
+    use crate::features::users::user::User;
+    use chrono::{Utc, Duration};
 
     struct FakeUserRepository {
         users: Mutex<Vec<User>>,
@@ -128,10 +131,7 @@ mod tests {
             Ok(true)
         }
 
-        async fn find_refresh_token(
-            &self,
-            value: &str,
-        ) -> Result<Option<RefreshToken>, sqlx::Error> {
+        async fn find_refresh_token(&self, value: &str) -> Result<Option<RefreshToken>, sqlx::Error> {
             let tokens = self.tokens.lock().unwrap();
             Ok(tokens.iter().find(|t| t.token == value).cloned())
         }
@@ -144,20 +144,18 @@ mod tests {
         }
     }
 
-    // Helper to setup env for JWT creation/decoding in tests
-    fn setup_jwt_env() {
-        use std::sync::Once;
-        static INIT: Once = Once::new();
-        INIT.call_once(|| unsafe {
-            std::env::set_var("JWT_KEY", "test-secret-key-for-jwt-signing");
-            std::env::set_var("JWT_AUDIENCE", "test-audience");
-            std::env::set_var("JWT_ISS", "test-issuer");
-        });
+    fn get_test_auth_config() -> AuthConfig {
+        AuthConfig {
+            jwt_key: "test-secret-key-for-jwt-signing".to_string(),
+            jwt_audience: "test-audience".to_string(),
+            jwt_issuer: "test-issuer".to_string(),
+            jwt_expiration_seconds: 900,
+        }
     }
 
     #[tokio::test]
     async fn test_refresh_tokens_success() {
-        setup_jwt_env();
+        let auth_config = get_test_auth_config();
         let user = User::new("test@example.com".to_string(), "password_hash".to_string());
         let token = RefreshToken::new(user.id.clone());
 
@@ -168,7 +166,7 @@ mod tests {
             tokens: Mutex::new(vec![token.clone()]),
         };
 
-        let service = TokensService::new(refresh_token_repo, user_repo);
+        let service = TokensService::new(refresh_token_repo, user_repo, auth_config);
         let response = service.refresh_tokens(&token.token).await.unwrap();
 
         assert!(!response.jwt_token.is_empty());
@@ -177,7 +175,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_refresh_tokens_expired() {
-        setup_jwt_env();
+        let auth_config = get_test_auth_config();
         let user = User::new("test@example.com".to_string(), "password_hash".to_string());
         let mut token = RefreshToken::new(user.id.clone());
         token.expires = Utc::now() - Duration::days(1); // Set to past
@@ -189,7 +187,7 @@ mod tests {
             tokens: Mutex::new(vec![token.clone()]),
         };
 
-        let service = TokensService::new(refresh_token_repo, user_repo);
+        let service = TokensService::new(refresh_token_repo, user_repo, auth_config);
         let result = service.refresh_tokens(&token.token).await;
 
         assert!(matches!(result, Err(Error::Unauthorized)));
@@ -197,7 +195,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_refresh_tokens_not_found() {
-        setup_jwt_env();
+        let auth_config = get_test_auth_config();
         let user = User::new("test@example.com".to_string(), "password_hash".to_string());
 
         let user_repo = FakeUserRepository {
@@ -207,7 +205,7 @@ mod tests {
             tokens: Mutex::new(vec![]),
         };
 
-        let service = TokensService::new(refresh_token_repo, user_repo);
+        let service = TokensService::new(refresh_token_repo, user_repo, auth_config);
         let result = service.refresh_tokens("nonexistent_token").await;
 
         assert!(matches!(result, Err(Error::Unauthorized)));
@@ -215,7 +213,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_refresh_tokens_user_not_found() {
-        setup_jwt_env();
+        let auth_config = get_test_auth_config();
         let token = RefreshToken::new("nonexistent_user".to_string());
 
         let user_repo = FakeUserRepository {
@@ -225,7 +223,7 @@ mod tests {
             tokens: Mutex::new(vec![token.clone()]),
         };
 
-        let service = TokensService::new(refresh_token_repo, user_repo);
+        let service = TokensService::new(refresh_token_repo, user_repo, auth_config);
         let result = service.refresh_tokens(&token.token).await;
 
         assert!(matches!(result, Err(Error::Unauthorized)));

@@ -1,3 +1,4 @@
+use crate::common::auth::config::AuthConfig;
 use crate::common::auth::routes::auth_router;
 use crate::db::create_pool;
 use axum::Router;
@@ -10,7 +11,8 @@ pub mod features;
 
 #[derive(Clone)]
 pub struct AppState {
-    db_pool: PgPool,
+    pub db_pool: PgPool,
+    pub auth_config: AuthConfig,
 }
 
 #[tokio::main]
@@ -22,11 +24,14 @@ async fn main() {
         .await
         .expect("Failed to create database pool");
 
+    let auth_config = AuthConfig::from_env();
+
     let auth_router = auth_router();
     let app = Router::new()
         .nest("/auth", auth_router)
         .with_state(AppState {
             db_pool: pool.clone(),
+            auth_config,
         });
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
