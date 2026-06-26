@@ -14,7 +14,13 @@ use axum_extra::extract::CookieJar;
 use axum_extra::extract::cookie::{Cookie, SameSite};
 
 pub fn auth_router() -> Router<AppState> {
-    Router::new().route("/refresh-tokens", post(refresh_tokens))
+    Router::new()
+        .route("/refresh-tokens", post(refresh_tokens))
+        .route("/ping", get(auth_router_ping))
+}
+
+async fn auth_router_ping() -> impl IntoResponse {
+    "Pong".to_string()
 }
 
 async fn refresh_tokens(
