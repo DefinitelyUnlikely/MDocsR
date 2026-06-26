@@ -102,9 +102,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Mutex;
     use crate::features::users::user::User;
-    use chrono::{Utc, Duration};
+    use chrono::{Duration, Utc};
+    use std::sync::Mutex;
 
     struct FakeUserRepository {
         users: Mutex<Vec<User>>,
@@ -128,7 +128,10 @@ mod tests {
             Ok(true)
         }
 
-        async fn find_refresh_token(&self, value: &str) -> Result<Option<RefreshToken>, sqlx::Error> {
+        async fn find_refresh_token(
+            &self,
+            value: &str,
+        ) -> Result<Option<RefreshToken>, sqlx::Error> {
             let tokens = self.tokens.lock().unwrap();
             Ok(tokens.iter().find(|t| t.token == value).cloned())
         }
