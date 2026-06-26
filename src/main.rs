@@ -1,13 +1,8 @@
 use crate::db::create_pool;
-use axum::{
-    Router,
-    http::StatusCode,
-    response::{IntoResponse, Redirect},
-    routing::{get, post},
-};
-use axum_extra::extract::cookie::{Cookie, CookieJar};
+use axum::Router;
 use sqlx::PgPool;
 use std::env;
+use crate::common::auth::routes::{auth_router};
 
 pub mod common;
 mod db;
@@ -27,10 +22,11 @@ async fn main() {
         .await
         .expect("Failed to create database pool");
 
-    // let app = Router::new()
-    //     .route("/token/refresh", get(refresh_token))
-    //     .with_state(AppState { db_pool: pool });
-    //
-    // let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    // axum::serve(listener, app).await.unwrap();
+    let auth_router = auth_router();
+    let app = Router::new()
+        .nest("/auth", auth_router)
+        .with_state(AppState { db_pool: pool.clone() });
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }

@@ -13,7 +13,7 @@ use axum::{
 use axum_extra::extract::CookieJar;
 use axum_extra::extract::cookie::{Cookie, SameSite};
 
-pub fn router() -> Router<AppState> {
+pub fn auth_router() -> Router<AppState> {
     Router::new().route("/refresh-tokens", post(refresh_tokens))
 }
 
