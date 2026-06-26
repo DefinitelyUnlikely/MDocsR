@@ -75,7 +75,7 @@ impl TokensService {
             return Ok(false);
         }
 
-        if let None = self.user_repo.fetch_user_by_id(&token.user_id).await? {
+        if self.user_repo.fetch_user_by_id(&token.user_id).await?.is_none() {
             // TODO: Trace this somewhat unusual case
             return Ok(false);
         }
