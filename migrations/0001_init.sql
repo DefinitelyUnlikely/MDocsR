@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS user_infos (
     user_id VARCHAR(255) UNIQUE NOT NULL REFERENCES users ON DELETE CASCADE,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    phone VARCHAR(50),
+    phone VARCHAR(50) NOT NULL,
     country VARCHAR(100) NOT NULL,
     city VARCHAR(100) NOT NULL,
     state VARCHAR(100),
