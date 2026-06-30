@@ -23,9 +23,9 @@ async fn main() {
     let pool = create_pool(&database_url)
         .await
         .expect("Failed to create database pool");
-    
+
     let migration_result = migrate(&pool).await;
-    
+
     match migration_result {
         Ok(_) => {}
         Err(error) => {
