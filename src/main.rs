@@ -1,6 +1,6 @@
 use crate::common::auth::config::AuthConfig;
 use crate::common::auth::routes::auth_router;
-use crate::db::create_pool;
+use crate::db::{create_pool, migrate};
 use axum::Router;
 use sqlx::PgPool;
 use std::env;
@@ -23,6 +23,8 @@ async fn main() {
     let pool = create_pool(&database_url)
         .await
         .expect("Failed to create database pool");
+    
+    migrate(&pool).await.expect("Failed to migrate");
 
     let auth_config = AuthConfig::from_env();
 
