@@ -21,4 +21,17 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);"
     ).execute(pool).await?;
+
+    sqlx::query!("CREATE TABLE IF NOT EXISTS user_infos (
+    id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
+    user_id VARCHAR(255) UNIQUE NOT NULL REFERENCES users,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(50),
+    country VARCHAR (100) NOT NULL,
+    city VARCHAR (100) NOT NULL,
+    state VARCHAR (100),
+    address VARCHAR (255) NOT NULL,
+    postal_code VARCHAR(20) NOT NULL
+    );").execute(pool).await?;
 }
