@@ -24,7 +24,14 @@ async fn main() {
         .await
         .expect("Failed to create database pool");
     
-    migrate(&pool).await.expect("Failed to migrate");
+    let migration_result = migrate(&pool).await;
+    
+    match migration_result {
+        Ok(_) => {}
+        Err(error) => {
+            panic!("Failed to migrate from database: {}", error);
+        }
+    }
 
     let auth_config = AuthConfig::from_env();
 
