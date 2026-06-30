@@ -9,3 +9,16 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
         .connect(database_url)
         .await
 }
+
+pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
+    // TODO: Make into transaction
+    sqlx::query!(
+        "CREATE TABLE IF NOT EXISTS users 
+        (id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) UNIQUE NOT NULL,
+        email_verified BOOLEAN UNIQUE NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);"
+    ).execute(pool).await?;
+}
