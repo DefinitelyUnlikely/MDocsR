@@ -20,9 +20,12 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
         email_verified BOOLEAN UNIQUE NOT NULL DEFAULT FALSE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);"
-    ).execute(pool).await?;
+    )
+    .execute(pool)
+    .await?;
 
-    sqlx::query!("CREATE TABLE IF NOT EXISTS user_infos (
+    sqlx::query!(
+        "CREATE TABLE IF NOT EXISTS user_infos (
     id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
     user_id VARCHAR(255) UNIQUE NOT NULL REFERENCES users ON DELETE CASCADE,
     first_name VARCHAR(100) NOT NULL,
@@ -33,12 +36,19 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
     state VARCHAR (100),
     address VARCHAR (255) NOT NULL,
     postal_code VARCHAR(20) NOT NULL
-    );").execute(pool).await?;
-    
-    sqlx::query!("CREATE TABLE IF NOT EXISTS refresh_tokens (
+    );"
+    )
+    .execute(pool)
+    .await?;
+
+    sqlx::query!(
+        "CREATE TABLE IF NOT EXISTS refresh_tokens (
     token VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
     user_id VARCHAR(255) NOT NULL REFERENCES users ON DELETE CASCADE,
-    expires TIMESTAMP WITH TIME ZONE NOT NULL);").execute(pool).await?;
-    
+    expires TIMESTAMP WITH TIME ZONE NOT NULL);"
+    )
+    .execute(pool)
+    .await?;
+
     Ok(())
 }
