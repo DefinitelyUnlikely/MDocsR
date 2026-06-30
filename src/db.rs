@@ -11,7 +11,8 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
 }
 
 pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
-    // TODO: Make into transaction
+    let mut transaction= pool.begin().await?;
+
     sqlx::query!(
         "CREATE TABLE IF NOT EXISTS users 
         (id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
@@ -21,7 +22,7 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP);"
     )
-    .execute(pool)
+    .execute(&mut *transaction)
     .await?;
 
     sqlx::query!(
@@ -38,7 +39,7 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
     postal_code VARCHAR(20) NOT NULL
     );"
     )
-    .execute(pool)
+    .execute(&mut *transaction)
     .await?;
 
     sqlx::query!(
@@ -47,8 +48,9 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
     user_id VARCHAR(255) NOT NULL REFERENCES users ON DELETE CASCADE,
     expires TIMESTAMP WITH TIME ZONE NOT NULL);"
     )
-    .execute(pool)
+    .execute(&mut *transaction)
     .await?;
-
+    
+    transaction.commit().await?;
     Ok(())
 }
