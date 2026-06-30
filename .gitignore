@@ -2,3 +2,6 @@
 
 # Files related to environment
 .env
+
+# JetBrains IDE database configurations
+.idea/*
