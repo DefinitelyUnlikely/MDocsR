@@ -1,3 +1,3 @@
 pub mod auth;
 pub mod error;
-mod cookies;
+pub mod cookies;
