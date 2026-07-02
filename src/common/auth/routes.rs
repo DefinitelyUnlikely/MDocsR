@@ -1,5 +1,4 @@
 use crate::AppState;
-use crate::common::auth::extractor::{build_access_cookie, build_refresh_cookie};
 use crate::common::auth::tokens::refresh::db::PostgresRefreshTokenRepository;
 use crate::common::auth::tokens::tokens_service::TokensService;
 use crate::common::error::Error;
@@ -12,6 +11,7 @@ use axum::{
     routing::{get, post},
 };
 use axum_extra::extract::CookieJar;
+use crate::common::cookies::{build_access_cookie, build_refresh_cookie};
 
 pub fn auth_router() -> Router<AppState> {
     Router::new()
