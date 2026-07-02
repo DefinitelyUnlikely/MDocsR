@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct RegisterPasskeyRequest {
-    email: String,
+    pub(crate) email: String,
 }
 
 pub struct RegisterPasskeyResponse {}

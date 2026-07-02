@@ -4,7 +4,7 @@ pub struct PasskeyService<U> {
     user_repo: U
 }
 
-impl<U> PasskeyService<U> 
+impl<U> PasskeyService<U>
 where
     U: UserRepository
 {

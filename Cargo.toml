@@ -22,6 +22,7 @@ openssl = { version = "0.10.81", features = ["vendored"] }
 url = "2.5.8"
 axum-limit = "0.1.0"
 axum_session = "0.20.1"
+regex = "1.12.4"
 
 [dependencies.uuid]
 version = "1.23.2"
