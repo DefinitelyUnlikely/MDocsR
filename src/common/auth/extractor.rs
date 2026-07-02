@@ -58,6 +58,7 @@ mod tests {
     use axum::http::{Request, Uri, header};
     use axum_limit::LimitState;
     use sqlx::PgPool;
+    use std::sync::Arc;
 
     use crate::common::auth::config::JwtConfig;
     use crate::common::auth::tokens::token::jwt::create_jwt;
@@ -65,6 +66,16 @@ mod tests {
     /// Builds a minimal AppState. The DB pool is never actually touched by the
     /// extractor — it only needs auth_config — so connect_lazy is safe here.
     fn test_state() -> AppState {
+        let rp_id = "localhost";
+        let rp_origin = url::Url::parse("https://localhost:8080").unwrap();
+
+        let webauthn = webauthn_rs::WebauthnBuilder::new(rp_id, &rp_origin)
+            .expect("Invalid Webauthn config")
+            .build()
+            .expect("Failed to build Webauthn");
+
+        let arc = Arc::new(webauthn);
+
         AppState {
             limits: LimitState::<Uri>::default(),
             db_pool: PgPool::connect_lazy("postgres://unused").unwrap(),
@@ -74,6 +85,7 @@ mod tests {
                 jwt_issuer: "test-issuer".to_string(),
                 jwt_expiration_seconds: 900,
             },
+            webauthn: arc,
         }
     }
 

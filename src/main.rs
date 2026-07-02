@@ -23,7 +23,7 @@ pub struct AppState {
 }
 
 // TODO: Start breaking main up more, make startup file with related functions
-// and run them from there perhaps? 
+// and run them from there perhaps?
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
