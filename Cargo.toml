@@ -9,7 +9,7 @@ bcrypt = "0.19.1"
 rand = "0.10.1"
 hex = "0.4.3"
 dotenvy = "0.15.7"
-serde = "1.0.228"
+serde = { version = "1.0.228", features = ["derive"] }
 jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
 sqlx = { version = "0.9.0", features = ["runtime-tokio", "postgres", "macros", "chrono"] }
 tokio = { version = "1.52.3", features = ["full"] }
