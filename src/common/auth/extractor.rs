@@ -3,7 +3,6 @@ use axum::http::StatusCode;
 use axum::http::request::Parts;
 use axum::response::{IntoResponse, Response};
 use axum_extra::extract::CookieJar;
-use axum_extra::extract::cookie::{Cookie, SameSite};
 
 use crate::AppState;
 use crate::common::auth::tokens::token::jwt::decode_jwt;
