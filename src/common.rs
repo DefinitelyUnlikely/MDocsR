@@ -1,5 +1,5 @@
 pub mod auth;
 pub mod cookies;
+pub mod dtos;
 pub mod error;
 pub mod startup;
-pub mod dtos;

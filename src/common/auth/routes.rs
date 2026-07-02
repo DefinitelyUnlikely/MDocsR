@@ -1,4 +1,8 @@
 use crate::AppState;
+use crate::common::auth::passkeys::handlers::{
+    add_passkey_finish, add_passkey_start, login_finish, login_start, register_finish,
+    register_start,
+};
 use crate::common::auth::tokens::refresh::db::PostgresRefreshTokenRepository;
 use crate::common::auth::tokens::tokens_service::TokensService;
 use crate::common::cookies::{build_access_cookie, build_refresh_cookie};
@@ -47,26 +51,4 @@ async fn refresh_tokens(
         .add(build_refresh_cookie(tokens.refresh_token_value));
 
     Ok((new_jar, StatusCode::OK).into_response())
-}
-
-async fn register_start() -> impl IntoResponse {
-    "Pong".to_string()
-}
-
-async fn register_finish() -> impl IntoResponse {
-    "Pong".to_string()
-}
-
-async fn login_start() -> impl IntoResponse {
-    "Pong".to_string()
-}
-async fn login_finish() -> impl IntoResponse {
-    "Pong".to_string()
-}
-
-async fn add_passkey_start() -> impl IntoResponse {
-    "Pong".to_string()
-}
-async fn add_passkey_finish() -> impl IntoResponse {
-    "Pong".to_string()
 }
