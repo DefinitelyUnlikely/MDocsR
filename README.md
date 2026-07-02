@@ -20,3 +20,11 @@ As of currently, I am translating work already done in .NET over to rust. The wo
 ### Passkeys
 
 The prototype used passwords as a means to login during testing. I started out with passwords for the rust version as well. As of currently, I am refactoring the application to instead use passkeys - as passwords are less secure without MFA. 
+
+## Improvements
+
+As the project will be, in all reality, a hobby project I'll host myself there are shortcuts I'm currently taking/will take that would not be my suggested solution for a real production environment. Some key aspects are outlined below:
+
+The project will often times make use (in the future, at least) of PostgreSQL/in-memory storage in the backend for things that should be stored in a dedicated in-memory cache (Redis, ValKey etc). 
+
+Another improvement, in a scenario where there are indeed multiple apps and they may run on different domains, would be to make use of a proper, dedicated auth server that deals with both authorization and registration. So that users would not need to sign up for X amount of different services that are all in reality part of the same ecosystem. 
