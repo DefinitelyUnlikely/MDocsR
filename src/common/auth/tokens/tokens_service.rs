@@ -118,6 +118,10 @@ mod tests {
             let users = self.users.lock().unwrap();
             Ok(users.iter().find(|u| u.id == id).cloned())
         }
+        
+        async fn fetch_user_by_email(&self, _email: &str) -> Result<Option<User>, Error> {
+            unimplemented!()
+        }
     }
 
     struct FakeRefreshTokenRepository {

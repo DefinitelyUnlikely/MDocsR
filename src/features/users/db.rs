@@ -26,12 +26,12 @@ impl UserRepository for PostgresUserRepository {
 
         Ok(user)
     }
-    
+
     async fn fetch_user_by_email(&self, email: &str) -> Result<Option<User>, Error> {
         let user = sqlx::query_as!(User, "SELECT * FROM users WHERE email = $1", email)
-        .fetch_optional(&self.pool)
-        .await?;
-        
+            .fetch_optional(&self.pool)
+            .await?;
+
         Ok(user)
     }
 }
