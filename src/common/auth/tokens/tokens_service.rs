@@ -163,7 +163,7 @@ mod tests {
     #[tokio::test]
     async fn test_refresh_tokens_success() {
         let auth_config = get_test_auth_config();
-        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let user = User::new("test@example.com".to_string());
         let token = RefreshToken::new(user.id.clone());
 
         let user_repo = FakeUserRepository {
@@ -183,7 +183,7 @@ mod tests {
     #[tokio::test]
     async fn test_refresh_tokens_expired() {
         let auth_config = get_test_auth_config();
-        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let user = User::new("test@example.com".to_string());
         let mut token = RefreshToken::new(user.id.clone());
         token.expires = Utc::now() - Duration::days(1); // Set to past
 
@@ -203,7 +203,7 @@ mod tests {
     #[tokio::test]
     async fn test_refresh_tokens_not_found() {
         let auth_config = get_test_auth_config();
-        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let user = User::new("test@example.com".to_string());
 
         let user_repo = FakeUserRepository {
             users: Mutex::new(vec![user.clone()]),
