@@ -1,11 +1,14 @@
-use crate::common::auth::config::JwtConfig;
+use crate::common::auth::config::{JwtConfig, WebauthnConfig};
 use crate::common::auth::routes::auth_router;
 use crate::db::{create_pool, migrate};
 use axum::Router;
-use sqlx::PgPool;
-use std::env;
 use axum::http::Uri;
 use axum_limit::LimitState;
+use sqlx::PgPool;
+use std::env;
+use std::sync::Arc;
+use url::Url;
+use webauthn_rs::{Webauthn, WebauthnBuilder};
 
 pub mod common;
 mod db;
@@ -16,6 +19,7 @@ pub struct AppState {
     limits: LimitState<Uri>,
     pub db_pool: PgPool,
     pub auth_config: JwtConfig,
+    pub webauthn: Arc<Webauthn>,
 }
 
 #[tokio::main]
@@ -37,6 +41,12 @@ async fn main() {
     }
 
     let auth_config = JwtConfig::from_env();
+    let webauthn_config = WebauthnConfig::from_env();
+    let webauthn = Arc::new(build_webauthn(
+        &webauthn_config.rp_id,
+        &webauthn_config.rp_origin,
+        &webauthn_config.rp_name,
+    ));
 
     let auth_router = auth_router();
     let app = Router::new()
@@ -45,8 +55,17 @@ async fn main() {
             limits: LimitState::<Uri>::default(),
             db_pool: pool.clone(),
             auth_config,
+            webauthn,
         });
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
+}
+
+pub fn build_webauthn(rp_id: &str, rp_origin: &Url, rp_name: &str) -> Webauthn {
+    WebauthnBuilder::new(rp_id, rp_origin)
+        .expect("Invalid WEBAUTHN_RP_ID OR ORIGIN")
+        .rp_name(rp_name)
+        .build()
+        .expect("Failed to build Webauthn")
 }

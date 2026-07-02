@@ -1,5 +1,6 @@
 use std::env;
 use webauthn_rs::prelude::Url;
+use webauthn_rs::{Webauthn, WebauthnBuilder};
 
 #[derive(Clone, Debug)]
 pub struct JwtConfig {

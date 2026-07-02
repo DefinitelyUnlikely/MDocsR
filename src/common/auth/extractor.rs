@@ -55,7 +55,7 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 mod tests {
     use super::*;
     use axum::extract::FromRequestParts;
-    use axum::http::{Request, header, Uri};
+    use axum::http::{Request, Uri, header};
     use axum_limit::LimitState;
     use sqlx::PgPool;
 
