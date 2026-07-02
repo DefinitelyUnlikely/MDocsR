@@ -1,6 +1,12 @@
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct CreateUserPayload {
+pub struct RegisterPasskeyRequest {
     email: String,
 }
+
+pub struct RegisterPasskeyResponse {}
+
+pub struct LoginRequest {}
+
+pub struct LoginResponse {}

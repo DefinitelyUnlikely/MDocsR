@@ -1,6 +1,8 @@
 use axum::response::IntoResponse;
+use axum::Json;
+use crate::common::dtos::passkeys::RegisterPasskeyRequest;
 
-pub async fn register_start() -> impl IntoResponse {
+pub async fn register_start(Json(payload): Json<RegisterPasskeyRequest>) -> impl IntoResponse {
     "Pong".to_string()
 }
 
