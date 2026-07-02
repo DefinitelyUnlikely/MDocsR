@@ -1,14 +1,14 @@
 use std::env;
 
 #[derive(Clone, Debug)]
-pub struct AuthConfig {
+pub struct JwtConfig {
     pub jwt_key: String,
     pub jwt_audience: String,
     pub jwt_issuer: String,
     pub jwt_expiration_seconds: u64,
 }
 
-impl AuthConfig {
+impl JwtConfig {
     pub fn from_env() -> Self {
         let jwt_key = env::var("JWT_KEY").expect("JWT_KEY must be set");
         let jwt_audience = env::var("JWT_AUDIENCE").expect("JWT_AUDIENCE must be set");

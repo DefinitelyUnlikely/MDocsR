@@ -1,4 +1,4 @@
-use crate::common::auth::config::AuthConfig;
+use crate::common::auth::config::JwtConfig;
 use jsonwebtoken::{
     Algorithm, DecodingKey, EncodingKey, Header, TokenData, Validation, decode, encode,
     get_current_timestamp,
@@ -15,7 +15,7 @@ pub struct Claims {
 
 pub fn create_jwt(
     user_id: &str,
-    config: &AuthConfig,
+    config: &JwtConfig,
 ) -> Result<String, jsonwebtoken::errors::Error> {
     let claims = Claims {
         aud: config.jwt_audience.clone(),
@@ -30,7 +30,7 @@ pub fn create_jwt(
 
 pub fn decode_jwt(
     token: &str,
-    config: &AuthConfig,
+    config: &JwtConfig,
 ) -> Result<TokenData<Claims>, jsonwebtoken::errors::Error> {
     let secret = DecodingKey::from_secret(config.jwt_key.as_bytes());
     let mut validation = Validation::new(Algorithm::HS256);
@@ -48,7 +48,7 @@ mod tests {
 
     #[test]
     fn test_create_and_decode_jwt() {
-        let config = AuthConfig {
+        let config = JwtConfig {
             jwt_key: "test-secret-key-for-jwt-signing".to_string(),
             jwt_audience: "test-audience".to_string(),
             jwt_issuer: "test-issuer".to_string(),

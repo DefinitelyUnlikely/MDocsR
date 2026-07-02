@@ -1,4 +1,4 @@
-use crate::common::auth::config::AuthConfig;
+use crate::common::auth::config::JwtConfig;
 use crate::common::auth::routes::auth_router;
 use crate::db::{create_pool, migrate};
 use axum::Router;
@@ -12,7 +12,7 @@ pub mod features;
 #[derive(Clone)]
 pub struct AppState {
     pub db_pool: PgPool,
-    pub auth_config: AuthConfig,
+    pub auth_config: JwtConfig,
 }
 
 #[tokio::main]
@@ -33,7 +33,7 @@ async fn main() {
         }
     }
 
-    let auth_config = AuthConfig::from_env();
+    let auth_config = JwtConfig::from_env();
 
     let auth_router = auth_router();
     let app = Router::new()

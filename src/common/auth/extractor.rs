@@ -58,7 +58,7 @@ mod tests {
     use axum::http::{Request, header};
     use sqlx::PgPool;
 
-    use crate::common::auth::config::AuthConfig;
+    use crate::common::auth::config::JwtConfig;
     use crate::common::auth::tokens::token::jwt::create_jwt;
 
     /// Builds a minimal AppState. The DB pool is never actually touched by the
@@ -66,7 +66,7 @@ mod tests {
     fn test_state() -> AppState {
         AppState {
             db_pool: PgPool::connect_lazy("postgres://unused").unwrap(),
-            auth_config: AuthConfig {
+            auth_config: JwtConfig {
                 jwt_key: "test-secret-that-is-long-enough".to_string(),
                 jwt_audience: "test-audience".to_string(),
                 jwt_issuer: "test-issuer".to_string(),

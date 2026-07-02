@@ -1,4 +1,4 @@
-use crate::common::auth::config::AuthConfig;
+use crate::common::auth::config::JwtConfig;
 use crate::common::auth::tokens::refresh::db::RefreshTokenRepository;
 use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt::create_jwt;
@@ -22,7 +22,7 @@ impl TokensResponse {
 pub struct TokensService<R, U> {
     refresh_token_repo: R,
     user_repo: U,
-    auth_config: AuthConfig,
+    auth_config: JwtConfig,
 }
 
 impl<R, U> TokensService<R, U>
@@ -30,7 +30,7 @@ where
     R: RefreshTokenRepository,
     U: UserRepository,
 {
-    pub fn new(refresh_token_repo: R, user_repo: U, auth_config: AuthConfig) -> Self {
+    pub fn new(refresh_token_repo: R, user_repo: U, auth_config: JwtConfig) -> Self {
         TokensService {
             refresh_token_repo,
             user_repo,
@@ -147,8 +147,8 @@ mod tests {
         }
     }
 
-    fn get_test_auth_config() -> AuthConfig {
-        AuthConfig {
+    fn get_test_auth_config() -> JwtConfig {
+        JwtConfig {
             jwt_key: "test-secret-key-for-jwt-signing".to_string(),
             jwt_audience: "test-audience".to_string(),
             jwt_issuer: "test-issuer".to_string(),
