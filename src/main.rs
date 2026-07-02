@@ -40,16 +40,21 @@ async fn main() {
     }
 
     let auth_config = JwtConfig::from_env();
+    
     let webauthn_config = WebauthnConfig::from_env();
     let webauthn = Arc::new(build_webauthn(
         &webauthn_config.rp_id,
         &webauthn_config.rp_origin,
         &webauthn_config.rp_name,
     ));
+    
+    let session_layer = build_session_layer()
+        .await;
 
     let auth_router = auth_router();
     let app = Router::new()
         .nest("/auth", auth_router)
+        .layer(session_layer)
         .with_state(AppState {
             db_pool: pool.clone(),
             auth_config,
