@@ -1,12 +1,12 @@
 use crate::common::auth::config::{JwtConfig, WebauthnConfig};
 use crate::common::auth::routes::auth_router;
-use crate::common::startup::{build_webauthn, build_session_layer};
+use crate::common::startup::{build_session_layer, build_webauthn};
 use crate::db::{create_pool, migrate};
 use axum::Router;
 use sqlx::PgPool;
 use std::env;
 use std::sync::Arc;
-use webauthn_rs::{Webauthn};
+use webauthn_rs::Webauthn;
 
 pub mod common;
 mod db;
@@ -40,16 +40,15 @@ async fn main() {
     }
 
     let auth_config = JwtConfig::from_env();
-    
+
     let webauthn_config = WebauthnConfig::from_env();
     let webauthn = Arc::new(build_webauthn(
         &webauthn_config.rp_id,
         &webauthn_config.rp_origin,
         &webauthn_config.rp_name,
     ));
-    
-    let session_layer = build_session_layer()
-        .await;
+
+    let session_layer = build_session_layer().await;
 
     let auth_router = auth_router();
     let app = Router::new()
