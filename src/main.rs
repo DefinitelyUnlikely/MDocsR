@@ -1,12 +1,12 @@
 use crate::common::auth::config::{JwtConfig, WebauthnConfig};
 use crate::common::auth::routes::auth_router;
+use crate::common::startup::{build_webauthn, build_session_layer};
 use crate::db::{create_pool, migrate};
 use axum::Router;
 use sqlx::PgPool;
 use std::env;
 use std::sync::Arc;
-use url::Url;
-use webauthn_rs::{Webauthn, WebauthnBuilder};
+use webauthn_rs::{Webauthn};
 
 pub mod common;
 mod db;
@@ -58,12 +58,4 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
-}
-
-pub fn build_webauthn(rp_id: &str, rp_origin: &Url, rp_name: &str) -> Webauthn {
-    WebauthnBuilder::new(rp_id, rp_origin)
-        .expect("Invalid WEBAUTHN_RP_ID OR ORIGIN")
-        .rp_name(rp_name)
-        .build()
-        .expect("Failed to build Webauthn")
 }
