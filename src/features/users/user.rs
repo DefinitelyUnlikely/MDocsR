@@ -30,7 +30,7 @@ pub struct UserWithInfo {
 }
 
 impl User {
-    pub fn new(email: String, password_hash: String) -> Self {
+    pub fn new(email: String) -> Self {
         User {
             id: Uuid::new_v4().to_string(),
             email,
