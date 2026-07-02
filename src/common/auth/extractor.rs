@@ -55,7 +55,8 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 mod tests {
     use super::*;
     use axum::extract::FromRequestParts;
-    use axum::http::{Request, header};
+    use axum::http::{Request, header, Uri};
+    use axum_limit::LimitState;
     use sqlx::PgPool;
 
     use crate::common::auth::config::JwtConfig;
@@ -65,6 +66,7 @@ mod tests {
     /// extractor — it only needs auth_config — so connect_lazy is safe here.
     fn test_state() -> AppState {
         AppState {
+            limits: LimitState::<Uri>::default(),
             db_pool: PgPool::connect_lazy("postgres://unused").unwrap(),
             auth_config: JwtConfig {
                 jwt_key: "test-secret-that-is-long-enough".to_string(),
