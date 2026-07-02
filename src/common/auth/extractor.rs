@@ -22,11 +22,7 @@ pub struct AuthenticatedUser {
     pub user_id: String,
 }
 
-/// Rejection type — always produces a 401.
-///
-/// Downstream handlers can match on this if they need to customize the body,
-/// but in most cases the 401 status alone is sufficient for the client to
-/// know it should hit `POST /auth/refresh-tokens`.
+
 pub struct AuthError;
 
 impl IntoResponse for AuthError {
@@ -68,7 +64,7 @@ pub fn build_access_cookie(token: String) -> Cookie<'static> {
 
 pub fn build_refresh_cookie(token: String) -> Cookie<'static> {
     Cookie::build(("refresh", token))
-        .path("/auth/refresh-tokens") // Scope refresh cookie to the refresh endpoint only
+        .path("/auth/refresh-tokens") // Scope refresh cookie to the refresh endpoint
         .http_only(true)
         .secure(true)
         .same_site(SameSite::Strict)
