@@ -20,6 +20,7 @@ tracing = "0.1.44"
 webauthn-rs = { version = "0.5.5", features = ["danger-allow-state-serialisation"] }
 openssl = { version = "0.10.81", features = ["vendored"] }
 url = "2.5.8"
+axum-limit = "0.1.0"
 
 [dependencies.uuid]
 version = "1.23.2"
