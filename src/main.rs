@@ -4,6 +4,8 @@ use crate::db::{create_pool, migrate};
 use axum::Router;
 use sqlx::PgPool;
 use std::env;
+use axum::http::Uri;
+use axum_limit::LimitState;
 
 pub mod common;
 mod db;
@@ -11,6 +13,7 @@ pub mod features;
 
 #[derive(Clone)]
 pub struct AppState {
+    limits: LimitState<Uri>,
     pub db_pool: PgPool,
     pub auth_config: JwtConfig,
 }
@@ -39,6 +42,7 @@ async fn main() {
     let app = Router::new()
         .nest("/auth", auth_router)
         .with_state(AppState {
+            limits: LimitState::<Uri>::default(),
             db_pool: pool.clone(),
             auth_config,
         });
