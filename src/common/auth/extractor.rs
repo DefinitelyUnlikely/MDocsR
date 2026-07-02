@@ -1,6 +1,6 @@
 use axum::extract::FromRequestParts;
-use axum::http::request::Parts;
 use axum::http::StatusCode;
+use axum::http::request::Parts;
 use axum::response::{IntoResponse, Response};
 use axum_extra::extract::CookieJar;
 use axum_extra::extract::cookie::{Cookie, SameSite};
@@ -21,7 +21,6 @@ use crate::common::auth::tokens::token::jwt::decode_jwt;
 pub struct AuthenticatedUser {
     pub user_id: String,
 }
-
 
 pub struct AuthError;
 
@@ -44,8 +43,7 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
 
         let token = jar.get("access_token").ok_or(AuthError)?;
 
-        let token_data = decode_jwt(token.value(), &state.auth_config)
-            .map_err(|_| AuthError)?;
+        let token_data = decode_jwt(token.value(), &state.auth_config).map_err(|_| AuthError)?;
 
         Ok(AuthenticatedUser {
             user_id: token_data.claims.sub,
