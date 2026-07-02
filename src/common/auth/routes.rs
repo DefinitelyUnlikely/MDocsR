@@ -12,7 +12,6 @@ use axum::{
     routing::{get, post},
 };
 use axum_extra::extract::CookieJar;
-use axum_limit::{LimitPerSecond, LimitState};
 
 pub fn auth_router() -> Router<AppState> {
     Router::new()
