@@ -77,7 +77,6 @@ mod tests {
         let arc = Arc::new(webauthn);
 
         AppState {
-            limits: LimitState::<Uri>::default(),
             db_pool: PgPool::connect_lazy("postgres://unused").unwrap(),
             auth_config: JwtConfig {
                 jwt_key: "test-secret-that-is-long-enough".to_string(),

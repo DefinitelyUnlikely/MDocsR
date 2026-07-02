@@ -2,8 +2,6 @@ use crate::common::auth::config::{JwtConfig, WebauthnConfig};
 use crate::common::auth::routes::auth_router;
 use crate::db::{create_pool, migrate};
 use axum::Router;
-use axum::http::Uri;
-use axum_limit::LimitState;
 use sqlx::PgPool;
 use std::env;
 use std::sync::Arc;
@@ -16,7 +14,6 @@ pub mod features;
 
 #[derive(Clone)]
 pub struct AppState {
-    limits: LimitState<Uri>,
     pub db_pool: PgPool,
     pub auth_config: JwtConfig,
     pub webauthn: Arc<Webauthn>,
@@ -54,7 +51,6 @@ async fn main() {
     let app = Router::new()
         .nest("/auth", auth_router)
         .with_state(AppState {
-            limits: LimitState::<Uri>::default(),
             db_pool: pool.clone(),
             auth_config,
             webauthn,
