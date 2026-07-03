@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use textnonce::TextNonce;
 
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub struct RegistrationNonce {
     pub nonce: String,
     pub email: String,
@@ -14,6 +15,5 @@ impl RegistrationNonce {
             email,
             created_at: Utc::now(),
         }
-
     }
 }

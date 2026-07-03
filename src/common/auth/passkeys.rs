@@ -1,3 +1,3 @@
+pub mod db;
 pub mod handlers;
 pub mod service;
-pub mod db;
