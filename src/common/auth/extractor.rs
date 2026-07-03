@@ -3,7 +3,6 @@ use axum::http::StatusCode;
 use axum::http::request::Parts;
 use axum::response::{IntoResponse, Response};
 use axum_extra::extract::CookieJar;
-use axum_extra::extract::cookie::{Cookie, SameSite};
 
 use crate::AppState;
 use crate::common::auth::tokens::token::jwt::decode_jwt;
@@ -52,45 +51,40 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
     }
 }
 
-pub fn build_access_cookie(token: String) -> Cookie<'static> {
-    Cookie::build(("access_token", token))
-        .path("/")
-        .http_only(true)
-        .secure(true)
-        .same_site(SameSite::Strict)
-        .build()
-}
-
-pub fn build_refresh_cookie(token: String) -> Cookie<'static> {
-    Cookie::build(("refresh", token))
-        .path("/auth/refresh-tokens") // Scope refresh cookie to the refresh endpoint
-        .http_only(true)
-        .secure(true)
-        .same_site(SameSite::Strict)
-        .build()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use axum::extract::FromRequestParts;
-    use axum::http::{Request, header};
+    use axum::http::{Request, Uri, header};
+    use axum_limit::LimitState;
     use sqlx::PgPool;
+    use std::sync::Arc;
 
-    use crate::common::auth::config::AuthConfig;
+    use crate::common::auth::config::JwtConfig;
     use crate::common::auth::tokens::token::jwt::create_jwt;
 
     /// Builds a minimal AppState. The DB pool is never actually touched by the
     /// extractor — it only needs auth_config — so connect_lazy is safe here.
     fn test_state() -> AppState {
+        let rp_id = "localhost";
+        let rp_origin = url::Url::parse("https://localhost:8080").unwrap();
+
+        let webauthn = webauthn_rs::WebauthnBuilder::new(rp_id, &rp_origin)
+            .expect("Invalid Webauthn config")
+            .build()
+            .expect("Failed to build Webauthn");
+
+        let arc = Arc::new(webauthn);
+
         AppState {
             db_pool: PgPool::connect_lazy("postgres://unused").unwrap(),
-            auth_config: AuthConfig {
+            auth_config: JwtConfig {
                 jwt_key: "test-secret-that-is-long-enough".to_string(),
                 jwt_audience: "test-audience".to_string(),
                 jwt_issuer: "test-issuer".to_string(),
                 jwt_expiration_seconds: 900,
             },
+            webauthn: arc,
         }
     }
 

@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO user_passkeys (id, user_id, name, credential_id, passkey)\n            VALUES ($1, $2, $3, $4, $5)\n            ON CONFLICT (id) DO UPDATE SET passkey = EXCLUDED.passkey, name = EXCLUDED.name\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Bytea",
+        "Jsonb"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8f1e1ae51b0dd3602cbd2c320f46613de07004809a376782179941a955a23857"
+}

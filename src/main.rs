@@ -1,9 +1,12 @@
-use crate::common::auth::config::AuthConfig;
+use crate::common::auth::config::{JwtConfig, WebauthnConfig};
 use crate::common::auth::routes::auth_router;
+use crate::common::startup::{build_session_layer, build_webauthn};
 use crate::db::{create_pool, migrate};
 use axum::Router;
 use sqlx::PgPool;
 use std::env;
+use std::sync::Arc;
+use webauthn_rs::Webauthn;
 
 pub mod common;
 mod db;
@@ -12,9 +15,12 @@ pub mod features;
 #[derive(Clone)]
 pub struct AppState {
     pub db_pool: PgPool,
-    pub auth_config: AuthConfig,
+    pub auth_config: JwtConfig,
+    pub webauthn: Arc<Webauthn>,
 }
 
+// TODO: Start breaking main up more, make startup file with related functions
+// and run them from there perhaps?
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
@@ -33,14 +39,25 @@ async fn main() {
         }
     }
 
-    let auth_config = AuthConfig::from_env();
+    let auth_config = JwtConfig::from_env();
+
+    let webauthn_config = WebauthnConfig::from_env();
+    let webauthn = Arc::new(build_webauthn(
+        &webauthn_config.rp_id,
+        &webauthn_config.rp_origin,
+        &webauthn_config.rp_name,
+    ));
+
+    let session_layer = build_session_layer().await;
 
     let auth_router = auth_router();
     let app = Router::new()
         .nest("/auth", auth_router)
+        .layer(session_layer)
         .with_state(AppState {
             db_pool: pool.clone(),
             auth_config,
+            webauthn,
         });
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

@@ -1,4 +1,4 @@
-use crate::common::auth::config::AuthConfig;
+use crate::common::auth::config::JwtConfig;
 use crate::common::auth::tokens::refresh::db::RefreshTokenRepository;
 use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt::create_jwt;
@@ -22,7 +22,7 @@ impl TokensResponse {
 pub struct TokensService<R, U> {
     refresh_token_repo: R,
     user_repo: U,
-    auth_config: AuthConfig,
+    auth_config: JwtConfig,
 }
 
 impl<R, U> TokensService<R, U>
@@ -30,7 +30,7 @@ where
     R: RefreshTokenRepository,
     U: UserRepository,
 {
-    pub fn new(refresh_token_repo: R, user_repo: U, auth_config: AuthConfig) -> Self {
+    pub fn new(refresh_token_repo: R, user_repo: U, auth_config: JwtConfig) -> Self {
         TokensService {
             refresh_token_repo,
             user_repo,
@@ -114,9 +114,17 @@ mod tests {
     }
 
     impl UserRepository for FakeUserRepository {
+        async fn save_user(&self, _user: User) -> Result<(), Error> {
+            unimplemented!()
+        }
+
         async fn fetch_user_by_id(&self, id: &str) -> Result<Option<User>, Error> {
             let users = self.users.lock().unwrap();
             Ok(users.iter().find(|u| u.id == id).cloned())
+        }
+
+        async fn fetch_user_by_email(&self, _email: &str) -> Result<Option<User>, Error> {
+            unimplemented!()
         }
     }
 
@@ -147,8 +155,8 @@ mod tests {
         }
     }
 
-    fn get_test_auth_config() -> AuthConfig {
-        AuthConfig {
+    fn get_test_auth_config() -> JwtConfig {
+        JwtConfig {
             jwt_key: "test-secret-key-for-jwt-signing".to_string(),
             jwt_audience: "test-audience".to_string(),
             jwt_issuer: "test-issuer".to_string(),
@@ -159,7 +167,7 @@ mod tests {
     #[tokio::test]
     async fn test_refresh_tokens_success() {
         let auth_config = get_test_auth_config();
-        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let user = User::new("test@example.com".to_string());
         let token = RefreshToken::new(user.id.clone());
 
         let user_repo = FakeUserRepository {
@@ -179,7 +187,7 @@ mod tests {
     #[tokio::test]
     async fn test_refresh_tokens_expired() {
         let auth_config = get_test_auth_config();
-        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let user = User::new("test@example.com".to_string());
         let mut token = RefreshToken::new(user.id.clone());
         token.expires = Utc::now() - Duration::days(1); // Set to past
 
@@ -199,7 +207,7 @@ mod tests {
     #[tokio::test]
     async fn test_refresh_tokens_not_found() {
         let auth_config = get_test_auth_config();
-        let user = User::new("test@example.com".to_string(), "password_hash".to_string());
+        let user = User::new("test@example.com".to_string());
 
         let user_repo = FakeUserRepository {
             users: Mutex::new(vec![user.clone()]),

@@ -9,12 +9,21 @@ bcrypt = "0.19.1"
 rand = "0.10.1"
 hex = "0.4.3"
 dotenvy = "0.15.7"
-serde = "1.0.228"
+serde = { version = "1.0.228", features = ["derive"] }
 jsonwebtoken = { version = "10.4.0", features = ["rust_crypto"] }
-sqlx = { version = "0.9.0", features = ["runtime-tokio", "postgres", "macros", "chrono"] }
+sqlx = { version = "0.9.0", features = ["runtime-tokio", "postgres", "macros", "chrono", "json"] }
 tokio = { version = "1.52.3", features = ["full"] }
 axum = "0.8.9"
 axum-extra = { version = "0.12.6", features = ["cookie"] }
+cookie = "0.18.1"
+tracing = "0.1.44"
+webauthn-rs = { version = "0.5.5", features = ["danger-allow-state-serialisation"] }
+openssl = { version = "0.10.81", features = ["vendored"] }
+url = "2.5.8"
+axum-limit = "0.1.0"
+axum_session = "0.20.1"
+regex = "1.12.4"
+textnonce = "1.0.0"
 
 [dependencies.uuid]
 version = "1.23.2"
