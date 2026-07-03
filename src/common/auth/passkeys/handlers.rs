@@ -1,4 +1,5 @@
 use crate::AppState;
+use crate::common::auth::extractor::AuthenticatedUser;
 use crate::common::auth::passkeys::db::{PasskeyRepository, PostgresPasskeyRepository};
 use crate::common::error::Error;
 use crate::common::nonce::{PostgresRegistrationNonceRepository, RegistrationNonceRepository};
@@ -104,9 +105,17 @@ pub async fn login_finish() -> impl IntoResponse {
     "Pong".to_string()
 }
 
-pub async fn add_passkey_start() -> impl IntoResponse {
+pub async fn add_passkey_start(
+    user: AuthenticatedUser,
+    session: Session<SessionNullPool>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     "Pong".to_string()
 }
-pub async fn add_passkey_finish() -> impl IntoResponse {
+pub async fn add_passkey_finish(
+    user: AuthenticatedUser,
+    session: Session<SessionNullPool>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     "Pong".to_string()
 }
