@@ -1,16 +1,19 @@
+use crate::AppState;
+use crate::common::dtos::passkeys::RegisterPasskeyRequest;
+use crate::common::error::Error;
+use crate::features::users::db::{PostgresUserRepository, UserRepository};
+use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Json;
-use crate::AppState;
-use crate::common::dtos::passkeys::RegisterPasskeyRequest;
-use crate::features::users::db::{PostgresUserRepository, UserRepository};
 use regex::Regex;
 use uuid::Uuid;
 use webauthn_rs::fake::WebauthnFakeCredentialGenerator;
-use crate::common::error::Error;
 
-pub async fn register_start(Json(payload): Json<RegisterPasskeyRequest>, State(state): State<AppState>) -> Result<impl IntoResponse, Error> {
+pub async fn register_start(
+    Json(payload): Json<RegisterPasskeyRequest>,
+    State(state): State<AppState>,
+) -> Result<impl IntoResponse, Error> {
     // start by doing everything in the handler
     // and we can separate the concerns afterward.
 
@@ -23,16 +26,14 @@ pub async fn register_start(Json(payload): Json<RegisterPasskeyRequest>, State(s
     }
 
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
-    
+
     // If we find a user, they cannot register using this endpoint.
     // but to prevent user enumeration, we store that this session is
-    // a dummy registration. We still return a real challenge. 
+    // a dummy registration. We still return a real challenge.
     let (user_id, is_dummy) = match user_repo.fetch_user_by_email(&payload.email).await? {
         Some(user) => (user.id, true),
         None => (Uuid::new_v4().to_string(), false),
     };
-
-
 }
 
 pub async fn register_finish() -> impl IntoResponse {
