@@ -9,6 +9,7 @@ use axum::response::IntoResponse;
 use axum_session::{Session, SessionNullPool};
 use uuid::Uuid;
 use webauthn_rs::prelude::*;
+use crate::features::users::user::User;
 
 pub async fn register_start(
     State(state): State<AppState>,
@@ -83,6 +84,7 @@ pub async fn register_finish(
 
     let _ = (email, user_id, passkey);
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
+    let user =
 
     Ok(StatusCode::OK.into_response())
 }

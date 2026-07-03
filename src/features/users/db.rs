@@ -22,9 +22,11 @@ impl PostgresUserRepository {
 impl UserRepository for PostgresUserRepository {
     async fn save_user(&self, user: User) -> Result<(), Error> {
         sqlx::query!(
-            "INSERT INTO users (id, email) VALUES ($1, $2)",
+            "INSERT INTO users (id, email, created_at, updated_at) VALUES ($1, $2, $3, $4)",
             user.id,
-            user.email
+            user.email,
+            user.created_at,
+            user.updated_at
         )
         .execute(&self.pool)
         .await?;

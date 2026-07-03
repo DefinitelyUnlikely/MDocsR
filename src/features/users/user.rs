@@ -37,4 +37,13 @@ impl User {
             updated_at: Utc::now(),
         }
     }
+    
+    pub fn new_with_id(email: String, id: String) -> Self {
+        User {
+            id,
+            email,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
 }
