@@ -1,16 +1,16 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM users WHERE id = $1",
+  "query": "DELETE FROM registration_nonces WHERE nonce = $1 RETURNING *",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id",
+        "name": "nonce",
         "type_info": "Varchar",
         "origin": {
           "Table": {
-            "table": "users",
-            "name": "id"
+            "table": "registration_nonces",
+            "name": "nonce"
           }
         }
       },
@@ -20,7 +20,7 @@
         "type_info": "Varchar",
         "origin": {
           "Table": {
-            "table": "users",
+            "table": "registration_nonces",
             "name": "email"
           }
         }
@@ -31,19 +31,8 @@
         "type_info": "Timestamptz",
         "origin": {
           "Table": {
-            "table": "users",
+            "table": "registration_nonces",
             "name": "created_at"
-          }
-        }
-      },
-      {
-        "ordinal": 3,
-        "name": "updated_at",
-        "type_info": "Timestamptz",
-        "origin": {
-          "Table": {
-            "table": "users",
-            "name": "updated_at"
           }
         }
       }
@@ -56,9 +45,8 @@
     "nullable": [
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "843923b9a0257cf80f1dff554e7dc8fdfc05f489328e8376513124dfb42996e3"
+  "hash": "0379f46c9eb68adbec1130976ecd991850edfe361cd6e73a4b9049a37eefb798"
 }

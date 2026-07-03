@@ -27,17 +27,6 @@
       },
       {
         "ordinal": 2,
-        "name": "email_verified",
-        "type_info": "Bool",
-        "origin": {
-          "Table": {
-            "table": "users",
-            "name": "email_verified"
-          }
-        }
-      },
-      {
-        "ordinal": 3,
         "name": "created_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -48,7 +37,7 @@
         }
       },
       {
-        "ordinal": 4,
+        "ordinal": 3,
         "name": "updated_at",
         "type_info": "Timestamptz",
         "origin": {
@@ -65,7 +54,6 @@
       ]
     },
     "nullable": [
-      false,
       false,
       false,
       false,
