@@ -18,6 +18,9 @@ pub async fn register_start(
     // start by doing everything in the handler
     // and we can separate the concerns afterward.
 
+    // Ensure the session is clean at the start by 
+    // removing any stale session that might have existed. 
+    session.remove("reg_state");
     let nonce_repo = PostgresRegistrationNonceRepository::new(state.db_pool.clone());
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
 
