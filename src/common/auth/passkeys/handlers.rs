@@ -6,6 +6,7 @@ use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum_session::{Session, SessionNullPool};
 use regex::Regex;
 use uuid::Uuid;
 use webauthn_rs::fake::WebauthnFakeCredentialGenerator;
@@ -13,6 +14,7 @@ use webauthn_rs::fake::WebauthnFakeCredentialGenerator;
 pub async fn register_start(
     Json(payload): Json<RegisterPasskeyRequest>,
     State(state): State<AppState>,
+    session: Session<SessionNullPool>
 ) -> Result<impl IntoResponse, Error> {
     // start by doing everything in the handler
     // and we can separate the concerns afterward.
@@ -34,6 +36,8 @@ pub async fn register_start(
         Some(user) => (user.id, true),
         None => (Uuid::new_v4().to_string(), false),
     };
+
+
 }
 
 pub async fn register_finish() -> impl IntoResponse {
