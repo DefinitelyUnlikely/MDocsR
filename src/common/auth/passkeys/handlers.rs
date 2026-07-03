@@ -1,7 +1,9 @@
 use crate::AppState;
+use crate::common::auth::passkeys::db::{PasskeyRepository, PostgresPasskeyRepository};
 use crate::common::error::Error;
 use crate::common::nonce::{PostgresRegistrationNonceRepository, RegistrationNonceRepository};
 use crate::features::users::db::{PostgresUserRepository, UserRepository};
+use crate::features::users::user::User;
 use axum::Json;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
@@ -9,7 +11,6 @@ use axum::response::IntoResponse;
 use axum_session::{Session, SessionNullPool};
 use uuid::Uuid;
 use webauthn_rs::prelude::*;
-use crate::features::users::user::User;
 
 pub async fn register_start(
     State(state): State<AppState>,
@@ -18,6 +19,7 @@ pub async fn register_start(
 ) -> Result<impl IntoResponse, Error> {
     // start by doing everything in the handler
     // and we can separate the concerns afterward.
+    // I just need a good understanding of the flow etc. first.
 
     // Ensure the session is clean at the start by
     // removing any stale session that might have existed.
@@ -82,10 +84,15 @@ pub async fn register_finish(
         Err(_) => return Err(Error::Failure),
     };
 
-    let _ = passkey;
-    
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
-    user_repo.save_user(User::new_with_id(email, user_id.to_string())).await?;
+    user_repo
+        .save_user(User::new_with_id(email, user_id.to_string()))
+        .await?;
+
+    let passkey_repo = PostgresPasskeyRepository::new(state.db_pool.clone());
+    passkey_repo
+        .save_passkey(&user_id.to_string(), "Default Passkey", &passkey)
+        .await?;
 
     Ok(StatusCode::OK.into_response())
 }

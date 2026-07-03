@@ -114,6 +114,10 @@ mod tests {
     }
 
     impl UserRepository for FakeUserRepository {
+        async fn save_user(&self, _user: User) -> Result<(), Error> {
+            unimplemented!()
+        }
+
         async fn fetch_user_by_id(&self, id: &str) -> Result<Option<User>, Error> {
             let users = self.users.lock().unwrap();
             Ok(users.iter().find(|u| u.id == id).cloned())
