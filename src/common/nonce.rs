@@ -1,6 +1,6 @@
-use std::result;
 use chrono::{DateTime, Utc};
 use sqlx::{Error, PgPool};
+use std::result;
 use textnonce::TextNonce;
 
 #[derive(sqlx::FromRow, Clone, Debug)]
@@ -25,8 +25,12 @@ impl RegistrationNonce {
 //-----------------
 #[allow(async_fn_in_trait)]
 pub trait RegistrationNonceRepository: Send + Sync {
-    async fn find_registration_nonce(&self, nonce: &str) -> Result<Option<RegistrationNonce>, sqlx::Error>;
-    async fn save_registration_nonce(&self, nonce: &RegistrationNonce) -> Result<bool, sqlx::Error>;
+    async fn find_registration_nonce(
+        &self,
+        nonce: &str,
+    ) -> Result<Option<RegistrationNonce>, sqlx::Error>;
+    async fn save_registration_nonce(&self, nonce: &RegistrationNonce)
+    -> Result<bool, sqlx::Error>;
     async fn delete_registration_nonce(&self, nonce: &str) -> Result<(), sqlx::Error>;
 }
 
@@ -41,11 +45,25 @@ impl PostgresRegistrationNonceRepository {
 }
 
 impl RegistrationNonceRepository for PostgresRegistrationNonceRepository {
-    async fn find_registration_nonce(&self, email: &str) -> Result<Option<RegistrationNonce>, sqlx::Error> {
-        let result = sqlx::query_as!(RegistrationNonce, "SELECT * FROM registration_nonces WHERE nonce = $1", email);
+    async fn find_registration_nonce(
+        &self,
+        email: &str,
+    ) -> Result<Option<RegistrationNonce>, sqlx::Error> {
+        let result = sqlx::query_as!(
+            RegistrationNonce,
+            "SELECT * FROM registration_nonces WHERE nonce = $1",
+            email
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(result)
     }
 
-    async fn save_registration_nonce(&self, nonce: &RegistrationNonce) -> Result<bool, sqlx::Error> {
+    async fn save_registration_nonce(
+        &self,
+        nonce: &RegistrationNonce,
+    ) -> Result<bool, sqlx::Error> {
         let result = sqlx::query!(
             "INSERT INTO registration_nonces VALUES ($1, $2, $3)",
             nonce.nonce,
@@ -62,7 +80,7 @@ impl RegistrationNonceRepository for PostgresRegistrationNonceRepository {
         sqlx::query!("DELETE FROM registration_nonces WHERE nonce = $1", nonce)
             .execute(&self.pool)
             .await?;
-        
+
         Ok(())
     }
 }
