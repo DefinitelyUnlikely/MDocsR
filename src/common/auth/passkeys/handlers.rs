@@ -18,16 +18,18 @@ pub async fn register_start(
     // start by doing everything in the handler
     // and we can separate the concerns afterward.
 
-    // Ensure the session is clean at the start by 
-    // removing any stale session that might have existed. 
+    // Ensure the session is clean at the start by
+    // removing any stale session that might have existed.
     session.remove("reg_state");
     let nonce_repo = PostgresRegistrationNonceRepository::new(state.db_pool.clone());
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
 
-    let Some(nonce) = nonce_repo.find_registration_nonce(&nonce).await? else {
+    let Some(nonce) = nonce_repo
+        .delete_returning_registration_nonce(&nonce)
+        .await?
+    else {
         return Ok(StatusCode::UNAUTHORIZED.into_response());
     };
-    nonce_repo.delete_registration_nonce(&nonce.nonce).await?;
 
     // This should not happen if we do the registration flow correctly
     // (User types in email, if they exist they get an email without the link)
@@ -37,21 +39,20 @@ pub async fn register_start(
     }
 
     let user_id = Uuid::new_v4();
-    let res = match state.webauthn.start_passkey_registration(
-        user_id,
-        &nonce.email,
-        &nonce.email,
-        None,
-    ) {
-        Ok((ccr, reg_state)) => {
-            session.set("reg_state", (nonce.email, user_id, reg_state));
-            Json(ccr).into_response()
-        }
-        Err(_) => {
-            return Err(Error::Failure);
-        }
-    };
-    
+    let res =
+        match state
+            .webauthn
+            .start_passkey_registration(user_id, &nonce.email, &nonce.email, None)
+        {
+            Ok((ccr, reg_state)) => {
+                session.set("reg_state", (nonce.email, user_id, reg_state));
+                Json(ccr).into_response()
+            }
+            Err(_) => {
+                return Err(Error::Failure);
+            }
+        };
+
     Ok(res)
 }
 
@@ -83,8 +84,6 @@ pub async fn register_finish(
     // TODO: Save user and passkey to database, consume registration nonce, and generate auth tokens.
     let _ = (email, user_id, passkey);
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
-    
-
 
     Ok(StatusCode::OK.into_response())
 }

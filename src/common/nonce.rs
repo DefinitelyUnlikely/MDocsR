@@ -31,7 +31,10 @@ pub trait RegistrationNonceRepository: Send + Sync {
     async fn save_registration_nonce(&self, nonce: &RegistrationNonce)
     -> Result<bool, sqlx::Error>;
     async fn delete_registration_nonce(&self, nonce: &str) -> Result<(), sqlx::Error>;
-    async fn delete_returning_registration_nonce(&self, nonce: &str) -> Result<RegistrationNonce, sqlx::Error>;
+    async fn delete_returning_registration_nonce(
+        &self,
+        nonce: &str,
+    ) -> Result<Option<RegistrationNonce>, sqlx::Error>;
 }
 
 pub struct PostgresRegistrationNonceRepository {
@@ -83,14 +86,19 @@ impl RegistrationNonceRepository for PostgresRegistrationNonceRepository {
 
         Ok(())
     }
-    
-    async fn delete_returning_registration_nonce(&self, nonce: &str) -> Result<RegistrationNonce, Error> {
-        let result = sqlx::query_as!(RegistrationNonce,
-        "DELETE FROM registration_nonces WHERE nonce = $1 RETURNING *",
-        nonce)
-            .fetch_one(&self.pool)
-            .await?;
-        
+
+    async fn delete_returning_registration_nonce(
+        &self,
+        nonce: &str,
+    ) -> Result<Option<RegistrationNonce>, Error> {
+        let result = sqlx::query_as!(
+            RegistrationNonce,
+            "DELETE FROM registration_nonces WHERE nonce = $1 RETURNING *",
+            nonce
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
         Ok(result)
     }
 }
