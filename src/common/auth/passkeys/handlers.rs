@@ -33,11 +33,12 @@ pub async fn register_start(
     // but to prevent user enumeration, we store that this session is
     // a dummy registration. We still return a real challenge.
     let (user_id, is_dummy) = match user_repo.fetch_user_by_email(&payload.email).await? {
-        Some(user) => (user.id, true),
+        Some(user) => (user.id, true), // TODO: Email user someone is trying register with their email
         None => (Uuid::new_v4().to_string(), false),
     };
 
-
+    
+    session.set("is_dummy_reg", is_dummy);
 }
 
 pub async fn register_finish() -> impl IntoResponse {
