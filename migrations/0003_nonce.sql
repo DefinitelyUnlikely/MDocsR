@@ -1,1 +1,1 @@
-CREATE TABLE IF NOT EXISTS nonces (nonce VARCHAR(255));
+CREATE TABLE IF NOT EXISTS registration_nonces (nonce VARCHAR(255), email VARCHAR(255));
