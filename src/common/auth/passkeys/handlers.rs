@@ -18,27 +18,6 @@ pub async fn register_start(
 ) -> Result<impl IntoResponse, Error> {
     // start by doing everything in the handler
     // and we can separate the concerns afterward.
-
-    // Let's start with using a simple regex to check if the email
-    // is at least email-ish.
-    let email = payload.email.trim().to_lowercase();
-    let re = Regex::new(r"^[^@\s]+@[^@\s]+\.[^@\s]+$").unwrap();
-    let is_match = re.is_match(&email);
-    if !is_match {
-        return Ok(StatusCode::BAD_REQUEST.into_response());
-    }
-
-    // If we find a user, they cannot register using this endpoint.
-    // but to prevent user enumeration, we store that this session is
-    // a dummy registration. We still return a real challenge.
-    let user_repo = PostgresUserRepository::new(state.db_pool.clone());
-    let (user_id, is_dummy) = match user_repo.fetch_user_by_email(&email).await? {
-        Some(user) => (user.id, true), // TODO: Email user someone is trying register with their email
-        None => (Uuid::new_v4().to_string(), false),
-    };
-
-
-    session.set("is_dummy_reg", is_dummy);
 }
 
 pub async fn register_finish() -> impl IntoResponse {
