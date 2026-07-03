@@ -19,7 +19,7 @@ As of currently, I am translating work already done in .NET over to rust. The wo
 
 ### Passkeys
 
-The prototype used passwords as a means to login during testing. I started out with passwords for the rust version as well. As of currently, I am refactoring the application to instead use passkeys - as passwords are less secure without MFA. 
+The prototype used passwords as a means to login during testing. I started out with passwords for the rust version as well. As of currently, I am refactoring the application to instead use passkeys. 
 
 ## Improvements
 
