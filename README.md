@@ -19,7 +19,7 @@ As of currently, I am translating work already done in .NET over to rust. The wo
 
 ### Passkeys
 
-The prototype used passwords as a means to login during testing. I started out with passwords for the rust version as well. As of currently, I am refactoring the application to instead use passkeys. 
+The prototype used passwords as a means to login during testing. I started out with passwords for the rust version as well. As of currently, I am refactoring the application to instead use passkeys. As of now, the flow lacks a few features I want for my implementation to work out, mainly email sending. This is a feature I'll work on later and as such, the current way to register a user and a passkey isn't optimal. In any sense of the word.
 
 ## Improvements
 
