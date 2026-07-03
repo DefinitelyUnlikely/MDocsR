@@ -147,11 +147,7 @@ pub async fn login_finish(
     Json(auth_credential): Json<PublicKeyCredential>,
 ) -> Result<impl IntoResponse, Error> {
     let Some(auth_state): Option<PasskeyAuthentication> = session.get("auth_state") else {
-        return Ok((
-            StatusCode::BAD_REQUEST,
-            "Missing or expired login session",
-        )
-            .into_response());
+        return Ok((StatusCode::BAD_REQUEST, "Missing or expired login session").into_response());
     };
 
     session.remove("auth_state");
@@ -173,9 +169,7 @@ pub async fn login_finish(
     };
 
     if passkey.update_credential(&auth_result).unwrap_or(false) {
-        passkey_repo
-            .save_passkey(&user_id, &name, &passkey)
-            .await?;
+        passkey_repo.save_passkey(&user_id, &name, &passkey).await?;
     }
 
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
@@ -228,7 +222,12 @@ pub async fn add_passkey_start(
     let exclude_keys = if existing_passkeys.is_empty() {
         None
     } else {
-        Some(existing_passkeys.iter().map(|p| p.cred_id().clone()).collect())
+        Some(
+            existing_passkeys
+                .iter()
+                .map(|p| p.cred_id().clone())
+                .collect(),
+        )
     };
 
     let (ccr, reg_state) = match state.webauthn.start_passkey_registration(
@@ -262,8 +261,7 @@ pub async fn add_passkey_finish(
         String,
         String,
         PasskeyRegistration,
-    )> = session.get("add_passkey_state")
-    else {
+    )> = session.get("add_passkey_state") else {
         return Ok((
             StatusCode::BAD_REQUEST,
             "Missing or expired passkey addition session",
