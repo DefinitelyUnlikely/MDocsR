@@ -18,7 +18,8 @@ async fn register_user(
     State(state): State<AppState>,
     Json(payload): Json<RegisterUserRequest>,
 ) -> Result<impl IntoResponse, Error> {
-    // For now, this handler will simply return the URL,
+    // TODO: Update this flow with email
+    // For now, this handler will simply return the nonce,
     // and we can start registering a passkey using that.
     // In the future, this will be replaced with instead generating
     // the link and sending it to the email specified.
