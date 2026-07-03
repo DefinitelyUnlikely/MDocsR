@@ -81,7 +81,6 @@ pub async fn register_finish(
         Err(_) => return Err(Error::Failure),
     };
 
-    // TODO: Save user and passkey to database, consume registration nonce, and generate auth tokens.
     let _ = (email, user_id, passkey);
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
 
