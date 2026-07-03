@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use sqlx::{Error, PgPool};
-use std::result;
 use textnonce::TextNonce;
 
 #[derive(sqlx::FromRow, Clone, Debug)]
