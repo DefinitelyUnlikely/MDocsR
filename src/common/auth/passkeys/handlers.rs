@@ -7,7 +7,9 @@ use crate::common::auth::tokens::refresh::db::{
 use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::cookies::{build_access_cookie, build_refresh_cookie};
-use crate::common::dtos::passkeys::LoginRequest;
+use crate::common::dtos::passkeys::{
+    AddPasskeyFinishRequest, AddPasskeyStartRequest, LoginRequest,
+};
 use crate::common::error::Error;
 use crate::common::nonce::{PostgresRegistrationNonceRepository, RegistrationNonceRepository};
 use crate::features::users::db::{PostgresUserRepository, UserRepository};
@@ -145,7 +147,11 @@ pub async fn login_finish(
     Json(auth_credential): Json<PublicKeyCredential>,
 ) -> Result<impl IntoResponse, Error> {
     let Some(auth_state): Option<PasskeyAuthentication> = session.get("auth_state") else {
-        return Ok((StatusCode::BAD_REQUEST, "Missing or expired login session").into_response());
+        return Ok((
+            StatusCode::BAD_REQUEST,
+            "Missing or expired login session",
+        )
+            .into_response());
     };
 
     session.remove("auth_state");
@@ -167,7 +173,9 @@ pub async fn login_finish(
     };
 
     if passkey.update_credential(&auth_result).unwrap_or(false) {
-        passkey_repo.save_passkey(&user_id, &name, &passkey).await?;
+        passkey_repo
+            .save_passkey(&user_id, &name, &passkey)
+            .await?;
     }
 
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
@@ -195,15 +203,97 @@ pub async fn login_finish(
 
 pub async fn add_passkey_start(
     user: AuthenticatedUser,
-    session: Session<SessionNullPool>,
     State(state): State<AppState>,
-) -> impl IntoResponse {
-    "Pong".to_string()
+    session: Session<SessionNullPool>,
+    Json(payload): Json<AddPasskeyStartRequest>,
+) -> Result<impl IntoResponse, Error> {
+    session.remove("add_passkey_state");
+
+    let user_repo = PostgresUserRepository::new(state.db_pool.clone());
+    let Some(db_user) = user_repo.fetch_user_by_id(&user.user_id).await? else {
+        return Err(Error::Unauthorized);
+    };
+
+    let user_id_uuid = match Uuid::parse_str(&user.user_id) {
+        Ok(u) => u,
+        Err(_) => return Err(Error::Unauthorized),
+    };
+
+    let passkey_repo = PostgresPasskeyRepository::new(state.db_pool.clone());
+    let existing_passkeys = passkey_repo
+        .load_passkeys_by_user_id(&user.user_id)
+        .await
+        .unwrap_or_default();
+
+    let exclude_keys = if existing_passkeys.is_empty() {
+        None
+    } else {
+        Some(existing_passkeys.iter().map(|p| p.cred_id().clone()).collect())
+    };
+
+    let (ccr, reg_state) = match state.webauthn.start_passkey_registration(
+        user_id_uuid,
+        &db_user.email,
+        &db_user.email,
+        exclude_keys,
+    ) {
+        Ok((ccr, reg_state)) => (ccr, reg_state),
+        Err(_) => return Err(Error::Failure),
+    };
+
+    let name = if payload.name.trim().is_empty() {
+        "Passkey".to_string()
+    } else {
+        payload.name
+    };
+
+    session.set("add_passkey_state", (user.user_id, name, reg_state));
+
+    Ok(Json(ccr).into_response())
 }
+
 pub async fn add_passkey_finish(
     user: AuthenticatedUser,
-    session: Session<SessionNullPool>,
     State(state): State<AppState>,
-) -> impl IntoResponse {
-    "Pong".to_string()
+    session: Session<SessionNullPool>,
+    Json(payload): Json<AddPasskeyFinishRequest>,
+) -> Result<impl IntoResponse, Error> {
+    let Some((session_user_id, session_name, reg_state)): Option<(
+        String,
+        String,
+        PasskeyRegistration,
+    )> = session.get("add_passkey_state")
+    else {
+        return Ok((
+            StatusCode::BAD_REQUEST,
+            "Missing or expired passkey addition session",
+        )
+            .into_response());
+    };
+
+    if session_user_id != user.user_id {
+        return Err(Error::Unauthorized);
+    }
+
+    session.remove("add_passkey_state");
+
+    let passkey = match state
+        .webauthn
+        .finish_passkey_registration(&payload.credential, &reg_state)
+    {
+        Ok(passkey) => passkey,
+        Err(_) => return Err(Error::Failure),
+    };
+
+    let final_name = payload
+        .name
+        .filter(|n| !n.trim().is_empty())
+        .unwrap_or(session_name);
+
+    let passkey_repo = PostgresPasskeyRepository::new(state.db_pool.clone());
+    passkey_repo
+        .save_passkey(&user.user_id, &final_name, &passkey)
+        .await?;
+
+    Ok(StatusCode::OK.into_response())
 }
