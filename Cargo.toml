@@ -23,6 +23,7 @@ url = "2.5.8"
 axum-limit = "0.1.0"
 axum_session = "0.20.1"
 regex = "1.12.4"
+textnonce = "1.0.0"
 
 [dependencies.uuid]
 version = "1.23.2"
