@@ -82,9 +82,10 @@ pub async fn register_finish(
         Err(_) => return Err(Error::Failure),
     };
 
-    let _ = (email, user_id, passkey);
+    let _ = passkey;
+    
     let user_repo = PostgresUserRepository::new(state.db_pool.clone());
-    let user =
+    user_repo.save_user(User::new_with_id(email, user_id.to_string())).await?;
 
     Ok(StatusCode::OK.into_response())
 }
