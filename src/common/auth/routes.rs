@@ -21,7 +21,7 @@ pub fn auth_router() -> Router<AppState> {
     Router::new()
         .route("/refresh-tokens", post(refresh_tokens))
         .route("/ping", get(auth_router_ping))
-        .route("/register/start", post(register_start))
+        .route("/register/start/:nonce", post(register_start))
         .route("/register/finish", post(register_finish))
         .route("/login/start", post(login_start))
         .route("/login/finish", post(login_finish))
