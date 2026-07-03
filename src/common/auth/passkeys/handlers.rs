@@ -1,6 +1,13 @@
 use crate::AppState;
 use crate::common::auth::extractor::AuthenticatedUser;
 use crate::common::auth::passkeys::db::{PasskeyRepository, PostgresPasskeyRepository};
+use crate::common::auth::tokens::refresh::db::{
+    PostgresRefreshTokenRepository, RefreshTokenRepository,
+};
+use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
+use crate::common::auth::tokens::token::jwt::create_jwt;
+use crate::common::cookies::{build_access_cookie, build_refresh_cookie};
+use crate::common::dtos::passkeys::LoginRequest;
 use crate::common::error::Error;
 use crate::common::nonce::{PostgresRegistrationNonceRepository, RegistrationNonceRepository};
 use crate::features::users::db::{PostgresUserRepository, UserRepository};
@@ -9,6 +16,7 @@ use axum::Json;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use axum_extra::extract::CookieJar;
 use axum_session::{Session, SessionNullPool};
 use uuid::Uuid;
 use webauthn_rs::prelude::*;
@@ -98,11 +106,91 @@ pub async fn register_finish(
     Ok(StatusCode::OK.into_response())
 }
 
-pub async fn login_start() -> impl IntoResponse {
-    "Pong".to_string()
+pub async fn login_start(
+    State(state): State<AppState>,
+    session: Session<SessionNullPool>,
+    Json(payload): Json<LoginRequest>,
+) -> Result<impl IntoResponse, Error> {
+    session.remove("auth_state");
+
+    let passkeys = if let Some(ref email) = payload.email {
+        let user_repo = PostgresUserRepository::new(state.db_pool.clone());
+        if let Ok(Some(user)) = user_repo.fetch_user_by_email(email).await {
+            let passkey_repo = PostgresPasskeyRepository::new(state.db_pool.clone());
+            passkey_repo
+                .load_passkeys_by_user_id(&user.id)
+                .await
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        }
+    } else {
+        Vec::new()
+    };
+
+    let (rcr, auth_state) = match state.webauthn.start_passkey_authentication(&passkeys) {
+        Ok((rcr, auth_state)) => (rcr, auth_state),
+        Err(_) => return Err(Error::Failure),
+    };
+
+    session.set("auth_state", auth_state);
+
+    Ok(Json(rcr).into_response())
 }
-pub async fn login_finish() -> impl IntoResponse {
-    "Pong".to_string()
+
+pub async fn login_finish(
+    State(state): State<AppState>,
+    session: Session<SessionNullPool>,
+    jar: CookieJar,
+    Json(auth_credential): Json<PublicKeyCredential>,
+) -> Result<impl IntoResponse, Error> {
+    let Some(auth_state): Option<PasskeyAuthentication> = session.get("auth_state") else {
+        return Ok((StatusCode::BAD_REQUEST, "Missing or expired login session").into_response());
+    };
+
+    session.remove("auth_state");
+
+    let auth_result = match state
+        .webauthn
+        .finish_passkey_authentication(&auth_credential, &auth_state)
+    {
+        Ok(res) => res,
+        Err(_) => return Err(Error::Unauthorized),
+    };
+
+    let cred_id_hex = hex::encode(auth_result.cred_id().as_slice());
+    let passkey_repo = PostgresPasskeyRepository::new(state.db_pool.clone());
+
+    let Some((user_id, name, mut passkey)) = passkey_repo.find_passkey_by_id(&cred_id_hex).await?
+    else {
+        return Err(Error::Unauthorized);
+    };
+
+    if passkey.update_credential(&auth_result).unwrap_or(false) {
+        passkey_repo.save_passkey(&user_id, &name, &passkey).await?;
+    }
+
+    let user_repo = PostgresUserRepository::new(state.db_pool.clone());
+    let Some(user) = user_repo.fetch_user_by_id(&user_id).await? else {
+        return Err(Error::Unauthorized);
+    };
+
+    let jwt_token = match create_jwt(&user.id, &state.auth_config) {
+        Ok(j) => j,
+        Err(_) => return Err(Error::Failure),
+    };
+
+    let refresh_token = RefreshToken::new(user.id.clone());
+    let refresh_token_repo = PostgresRefreshTokenRepository::new(state.db_pool.clone());
+    refresh_token_repo
+        .save_refresh_token(&refresh_token)
+        .await?;
+
+    let new_jar = jar
+        .add(build_access_cookie(jwt_token))
+        .add(build_refresh_cookie(refresh_token.token));
+
+    Ok((new_jar, StatusCode::OK).into_response())
 }
 
 pub async fn add_passkey_start(

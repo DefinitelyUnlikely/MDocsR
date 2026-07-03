@@ -8,6 +8,10 @@ pub trait PasskeyRepository: Send + Sync {
     async fn save_passkey(&self, user_id: &str, name: &str, passkey: &Passkey)
     -> Result<(), Error>;
     async fn load_passkeys_by_user_id(&self, user_id: &str) -> Result<Vec<Passkey>, Error>;
+    async fn find_passkey_by_id(
+        &self,
+        id: &str,
+    ) -> Result<Option<(String, String, Passkey)>, Error>;
 }
 
 pub struct PostgresPasskeyRepository {
@@ -31,10 +35,11 @@ impl PasskeyRepository for PostgresPasskeyRepository {
         let id = hex::encode(cred_id_bytes);
 
         sqlx::query!(
-            "
+            r#"
             INSERT INTO user_passkeys (id, user_id, name, credential_id, passkey)
             VALUES ($1, $2, $3, $4, $5)
-            ",
+            ON CONFLICT (id) DO UPDATE SET passkey = EXCLUDED.passkey, name = EXCLUDED.name
+            "#,
             id,
             user_id,
             name,
@@ -58,5 +63,19 @@ impl PasskeyRepository for PostgresPasskeyRepository {
         let passkeys = rows.into_iter().map(|row| row.passkey.0).collect();
 
         Ok(passkeys)
+    }
+
+    async fn find_passkey_by_id(
+        &self,
+        id: &str,
+    ) -> Result<Option<(String, String, Passkey)>, Error> {
+        let row = sqlx::query!(
+            r#"SELECT user_id, name, passkey AS "passkey: Json<Passkey>" FROM user_passkeys WHERE id = $1"#,
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+
+        Ok(row.map(|r| (r.user_id, r.name, r.passkey.0)))
     }
 }

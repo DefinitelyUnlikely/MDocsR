@@ -7,6 +7,9 @@ pub struct RegisterPasskeyRequest {
 
 pub struct RegisterPasskeyResponse {}
 
-pub struct LoginRequest {}
+#[derive(Deserialize)]
+pub struct LoginRequest {
+    pub email: Option<String>,
+}
 
 pub struct LoginResponse {}
