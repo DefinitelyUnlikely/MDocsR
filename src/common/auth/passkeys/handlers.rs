@@ -27,6 +27,7 @@ pub async fn register_start(
     let Some(nonce) = nonce_repo.find_registration_nonce(&nonce).await? else {
         return Ok(StatusCode::UNAUTHORIZED.into_response());
     };
+    nonce_repo.delete_registration_nonce(&nonce.nonce).await?;
 
     // This should not happen if we do the registration flow correctly
     // (User types in email, if they exist they get an email without the link)
@@ -50,7 +51,7 @@ pub async fn register_start(
             return Err(Error::Failure);
         }
     };
-
+    
     Ok(res)
 }
 
@@ -81,6 +82,9 @@ pub async fn register_finish(
 
     // TODO: Save user and passkey to database, consume registration nonce, and generate auth tokens.
     let _ = (email, user_id, passkey);
+    let user_repo = PostgresUserRepository::new(state.db_pool.clone());
+    
+
 
     Ok(StatusCode::OK.into_response())
 }
