@@ -89,5 +89,11 @@ impl DocumentRepository for PostgresDocumentRepository {
         }
     }
 
-    async fn delete(&self, document_id: &str) -> Result<(), Error> {}
+    async fn delete(&self, document_id: &str) -> Result<(), Error> {
+        sqlx::query!("DELETE FROM documents WHERE id = $1", document_id)
+            .execute(&self.pool)
+        .await?;
+        
+        Ok(())
+    }
 }
