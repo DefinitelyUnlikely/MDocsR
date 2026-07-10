@@ -7,7 +7,7 @@ use crate::common::auth::tokens::refresh::repository::PostgresRefreshTokenReposi
 use crate::common::auth::tokens::tokens_service::TokensService;
 use crate::common::cookies::{build_access_cookie, build_refresh_cookie};
 use crate::common::error::Error;
-use crate::features::users::db::PostgresUserRepository;
+use crate::features::users::repository::PostgresUserRepository;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{

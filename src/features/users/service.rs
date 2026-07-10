@@ -1,4 +1,4 @@
-use crate::features::users::db::UserRepository;
+use crate::features::users::repository::UserRepository;
 
 pub struct UserService<U> {
     user_repo: U,

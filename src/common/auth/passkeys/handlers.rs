@@ -12,7 +12,7 @@ use crate::common::dtos::passkeys::{
 };
 use crate::common::error::Error;
 use crate::common::nonce::{PostgresRegistrationNonceRepository, RegistrationNonceRepository};
-use crate::features::users::db::{PostgresUserRepository, UserRepository};
+use crate::features::users::repository::{PostgresUserRepository, UserRepository};
 use crate::features::users::user::User;
 use axum::Json;
 use axum::extract::{Path, State};

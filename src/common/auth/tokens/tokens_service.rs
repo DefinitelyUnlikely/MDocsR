@@ -3,7 +3,7 @@ use crate::common::auth::tokens::refresh::repository::RefreshTokenRepository;
 use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::error::Error;
-use crate::features::users::db::UserRepository;
+use crate::features::users::repository::UserRepository;
 
 pub struct TokensResponse {
     pub refresh_token_value: String,
