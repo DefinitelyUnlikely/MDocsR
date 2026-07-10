@@ -1,10 +1,10 @@
 use crate::AppState;
 use crate::common::auth::extractor::AuthenticatedUser;
 use crate::common::auth::passkeys::repository::{PasskeyRepository, PostgresPasskeyRepository};
+use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::refresh::repository::{
     PostgresRefreshTokenRepository, RefreshTokenRepository,
 };
-use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
 use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::cookies::{build_access_cookie, build_refresh_cookie};
 use crate::common::dtos::passkeys::{

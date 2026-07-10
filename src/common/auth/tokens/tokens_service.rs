@@ -1,6 +1,6 @@
 use crate::common::auth::config::JwtConfig;
-use crate::common::auth::tokens::refresh::repository::RefreshTokenRepository;
 use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;
+use crate::common::auth::tokens::refresh::repository::RefreshTokenRepository;
 use crate::common::auth::tokens::token::jwt::create_jwt;
 use crate::common::error::Error;
 use crate::features::users::repository::UserRepository;
