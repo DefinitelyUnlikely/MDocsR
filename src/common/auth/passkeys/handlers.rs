@@ -1,7 +1,7 @@
 use crate::AppState;
 use crate::common::auth::extractor::AuthenticatedUser;
-use crate::common::auth::passkeys::db::{PasskeyRepository, PostgresPasskeyRepository};
-use crate::common::auth::tokens::refresh::db::{
+use crate::common::auth::passkeys::repository::{PasskeyRepository, PostgresPasskeyRepository};
+use crate::common::auth::tokens::refresh::repository::{
     PostgresRefreshTokenRepository, RefreshTokenRepository,
 };
 use crate::common::auth::tokens::refresh::refresh_token::RefreshToken;

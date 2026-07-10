@@ -3,7 +3,7 @@ use crate::common::auth::passkeys::handlers::{
     add_passkey_finish, add_passkey_start, login_finish, login_start, register_finish,
     register_start,
 };
-use crate::common::auth::tokens::refresh::db::PostgresRefreshTokenRepository;
+use crate::common::auth::tokens::refresh::repository::PostgresRefreshTokenRepository;
 use crate::common::auth::tokens::tokens_service::TokensService;
 use crate::common::cookies::{build_access_cookie, build_refresh_cookie};
 use crate::common::error::Error;
