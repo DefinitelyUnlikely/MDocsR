@@ -5,6 +5,7 @@ use axum::Json;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use serde::Deserialize;
+use url::quirks::username;
 use crate::features::documents::document::Document;
 use crate::features::documents::repository::DocumentRepository;
 
@@ -23,6 +24,10 @@ pub async fn new_document_handler(
 }
 
 
-pub async fn create_new_document(repo: &impl DocumentRepository, user_id: String, name: String) -> Result<impl IntoResponse, Error> {
-    Document::
+pub async fn create_new_document(repo: &impl DocumentRepository, user_id: String, name: String) -> Result<Option<Document>, Error> {
+    let document = Document::new(user_id, name);
+    
+    let result =repo.save(document).await?;
+    
+    
 }

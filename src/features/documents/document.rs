@@ -14,7 +14,7 @@ pub struct Document {
 
 
 impl Document {
-    fn new(user_id: String, title: String) -> Self {
+    pub(crate) fn new(user_id: String, title: String) -> Self {
         Document {
             id: Uuid::new_v4().to_string(),
             user_id,
